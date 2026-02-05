@@ -583,6 +583,7 @@
 
         async function init() {
             mockHistory();
+            updateParticles(); // Initialize particles based on initial metrics
             setInterval(tickClock, 1000);
             setInterval(fetchSpaceData, 60000); // 1 min
             setInterval(fetchEarthData, 300000); // 5 min
@@ -591,6 +592,7 @@
 
             await Promise.all([fetchSpaceData(), fetchEarthData(), fetchHumanData()]);
             calculateIBONARIUM();
+            updateParticles(); // Update after first data fetch
             log("IBONARIUM STATE VECTOR ONLINE");
         }
 
@@ -757,6 +759,7 @@
             if (STATE.history.length > MAX_HISTORY) STATE.history.shift();
 
             updateMainUI();
+            updateParticles(); // Update visualization based on new metrics
         }
 
         // ============================================================================
@@ -826,25 +829,74 @@
         }
 
         // ============================================================================
-        // VISUALIZATION - 3D ROTATING MODEL
+        // DATA-DRIVEN VISUALIZATION - REACTIVE TO METRICS
         // ============================================================================
 
         let rotationAngle = 0;
-        const particles = [];
+        let particles = [];
+        let lastMetricsUpdate = 0;
 
-        // Initialize particles
-        for (let i = 0; i < 100; i++) {
-            particles.push({
-                angle: Math.random() * Math.PI * 2,
-                radius: Math.random() * 200 + 50,
-                z: Math.random() * 400 - 200,
-                speed: Math.random() * 0.01 + 0.005,
-                size: Math.random() * 2 + 1
+        // Initialize particles based on current metrics
+        function updateParticles() {
+            // Particle count based on Kp index (0-9 -> 50-300 particles)
+            const targetCount = Math.floor(50 + STATE.space.kp * 25);
+
+            // Add particles if needed
+            while (particles.length < targetCount) {
+                particles.push(createParticle());
+            }
+
+            // Remove particles if needed
+            while (particles.length > targetCount) {
+                particles.pop();
+            }
+
+            // Update particle properties based on metrics
+            particles.forEach(p => {
+                // Speed based on solar wind (300-1000 km/s -> 0.005-0.03)
+                p.baseSpeed = 0.005 + (STATE.space.sw_speed / 1000) * 0.025;
+
+                // Color based on temperature (-20 to +40 -> blue to red)
+                const tempNorm = (STATE.earth.temp + 20) / 60;
+                p.color = tempToColor(tempNorm);
+
+                // Size based on pressure deviation
+                const pressDeviation = Math.abs(STATE.earth.press - 1013) / 50;
+                p.sizeMultiplier = 1 + pressDeviation * 0.5;
             });
         }
 
+        function createParticle() {
+            return {
+                angle: Math.random() * Math.PI * 2,
+                radius: Math.random() * 250 + 30,
+                z: Math.random() * 500 - 250,
+                baseSpeed: 0.01,
+                speed: 0.01,
+                size: Math.random() * 2 + 1,
+                sizeMultiplier: 1,
+                color: 'rgba(136, 0, 255, 0.6)',
+                turbulence: 0
+            };
+        }
+
+        function tempToColor(norm) {
+            const r = Math.floor(norm * 255);
+            const b = Math.floor((1 - norm) * 255);
+            const g = 100;
+            return `rgba(${r}, ${g}, ${b}, 0.6)`;
+        }
+
         function animLoop() {
-            rotationAngle += 0.005;
+            rotationAngle += 0.003;
+
+            // Update particles every minute based on new metrics
+            const now = Date.now();
+            if (now - lastMetricsUpdate > 60000) {
+                updateParticles();
+                lastMetricsUpdate = now;
+            }
+
             drawVisualization();
             requestAnimationFrame(animLoop);
         }
@@ -871,44 +923,97 @@
                 };
             }
 
-            // Draw particles
+            // Wind turbulence effect
+            const windTurbulence = STATE.earth.wind / 20;
+
+            // Draw particles with metric-based behavior
             particles.forEach(p => {
-                p.angle += p.speed;
-                const x = Math.cos(p.angle + rotationAngle) * p.radius;
-                const y = Math.sin(p.angle + rotationAngle) * p.radius;
+                // Update angle with base speed + turbulence
+                p.angle += p.baseSpeed + Math.sin(rotationAngle * 5) * windTurbulence * 0.01;
+
+                // Radius oscillation based on sentiment (nervous system)
+                const sentimentWave = Math.sin(rotationAngle * 3 + p.angle) * (100 - STATE.human.sentiment) / 100 * 20;
+                const currentRadius = p.radius + sentimentWave;
+
+                const x = Math.cos(p.angle + rotationAngle) * currentRadius;
+                const y = Math.sin(p.angle + rotationAngle) * currentRadius;
+
+                // Z-axis movement based on Bz (magnetic field)
+                p.z += Math.sin(rotationAngle * 2) * Math.abs(STATE.space.bz) * 0.5;
+                if (p.z > 250) p.z = -250;
+                if (p.z < -250) p.z = 250;
+
                 const proj = project3D(x, y, p.z);
 
-                ctx.fillStyle = `rgba(136, 0, 255, ${proj.scale * 0.5})`;
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = proj.scale * 0.7;
                 ctx.beginPath();
-                ctx.arc(proj.x, proj.y, p.size * proj.scale, 0, Math.PI * 2);
+                ctx.arc(proj.x, proj.y, p.size * p.sizeMultiplier * proj.scale, 0, Math.PI * 2);
                 ctx.fill();
             });
+            ctx.globalAlpha = 1;
 
-            // Draw 3D rotating layers
+            // Draw data-driven layers
             const layers = [
-                { radius: maxR * 1.0, score: STATE.space.score, color: '#f80', label: 'SPACE', z: 0 },
-                { radius: maxR * 0.7, score: STATE.earth.score, color: '#0af', label: 'EARTH', z: -50 },
-                { radius: maxR * 0.4, score: STATE.human.score, color: '#f0f', label: 'HUMAN', z: -100 }
+                {
+                    radius: maxR * 1.0,
+                    score: STATE.space.score,
+                    color: '#f80',
+                    label: 'SPACE',
+                    z: 0,
+                    metric: STATE.space.kp,
+                    maxMetric: 9
+                },
+                {
+                    radius: maxR * 0.7,
+                    score: STATE.earth.score,
+                    color: '#0af',
+                    label: 'EARTH',
+                    z: -50,
+                    metric: Math.abs(STATE.earth.press - 1013),
+                    maxMetric: 50
+                },
+                {
+                    radius: maxR * 0.4,
+                    score: STATE.human.score,
+                    color: '#f0f',
+                    label: 'HUMAN',
+                    z: -100,
+                    metric: STATE.human.market,
+                    maxMetric: 20
+                }
             ];
 
             layers.forEach(layer => {
                 const segments = 64;
+
+                // Pulsation based on metric intensity
+                const pulse = Math.sin(rotationAngle * 4) * (layer.metric / layer.maxMetric) * 10;
+                const activeRadius = layer.radius + pulse;
+
                 for (let i = 0; i < segments; i++) {
                     const angle1 = (i / segments) * Math.PI * 2 + rotationAngle;
                     const angle2 = ((i + 1) / segments) * Math.PI * 2 + rotationAngle;
 
-                    const x1 = Math.cos(angle1) * layer.radius;
-                    const y1 = Math.sin(angle1) * layer.radius;
-                    const x2 = Math.cos(angle2) * layer.radius;
-                    const y2 = Math.sin(angle2) * layer.radius;
+                    // Deformation based on score (lower score = more distortion)
+                    const distortion1 = Math.sin(angle1 * 3) * (100 - layer.score) / 100 * 15;
+                    const distortion2 = Math.sin(angle2 * 3) * (100 - layer.score) / 100 * 15;
+
+                    const x1 = Math.cos(angle1) * (activeRadius + distortion1);
+                    const y1 = Math.sin(angle1) * (activeRadius + distortion1);
+                    const x2 = Math.cos(angle2) * (activeRadius + distortion2);
+                    const y2 = Math.sin(angle2) * (activeRadius + distortion2);
 
                     const p1 = project3D(x1, y1, layer.z);
                     const p2 = project3D(x2, y2, layer.z);
 
                     const progress = i / segments;
-                    const alpha = progress < (layer.score / 100) ? 0.8 : 0.2;
+                    const alpha = progress < (layer.score / 100) ? 0.9 : 0.15;
 
-                    ctx.strokeStyle = layer.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                    // Intensity flicker based on metric
+                    const flicker = 1 + Math.sin(rotationAngle * 10 + i) * (layer.metric / layer.maxMetric) * 0.2;
+
+                    ctx.strokeStyle = layer.color + Math.floor(alpha * flicker * 255).toString(16).padStart(2, '0');
                     ctx.lineWidth = 3 * p1.scale;
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
@@ -916,17 +1021,46 @@
                     ctx.stroke();
                 }
 
-                // Layer label
+                // Layer label with glow based on activity
                 const labelAngle = rotationAngle;
-                const lx = Math.cos(labelAngle) * (layer.radius + 20);
-                const ly = Math.sin(labelAngle) * (layer.radius + 20);
+                const lx = Math.cos(labelAngle) * (layer.radius + 25);
+                const ly = Math.sin(labelAngle) * (layer.radius + 25);
                 const lp = project3D(lx, ly, layer.z);
 
+                const glowIntensity = 10 + (layer.metric / layer.maxMetric) * 20;
+                ctx.shadowBlur = glowIntensity;
+                ctx.shadowColor = layer.color;
                 ctx.fillStyle = '#fff';
                 ctx.font = (10 * lp.scale) + 'px Space Mono';
                 ctx.textAlign = 'center';
                 ctx.fillText(layer.label, lp.x, lp.y);
+                ctx.shadowBlur = 0;
             });
+
+            // Connection lines between layers based on correlation
+            if (STATE.space.score > 0 && STATE.earth.score > 0) {
+                const correlation = Math.abs(STATE.space.score - STATE.earth.score) / 100;
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * (1 - correlation)})`;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2 + rotationAngle;
+                    const x1 = Math.cos(angle) * maxR * 1.0;
+                    const y1 = Math.sin(angle) * maxR * 1.0;
+                    const x2 = Math.cos(angle) * maxR * 0.7;
+                    const y2 = Math.sin(angle) * maxR * 0.7;
+
+                    const p1 = project3D(x1, y1, 0);
+                    const p2 = project3D(x2, y2, -50);
+
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+                ctx.setLineDash([]);
+            }
 
             // History graph at bottom
             drawHistory();
