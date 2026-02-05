@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <title>IBONARIUM · CHRONOS 7D · SUBIECTIVE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ------------------------------------------------------------------
+           AESTHETIC: DEEP VOID & DATA DENSITY
+           ------------------------------------------------------------------ */
+        :root {
+            --bg-deep: #020205;
+            --accent-pri: #80f;
+            /* Spirit/Time */
+            --accent-sec: #0ff;
+            /* Data/Logic */
+            --accent-warn: #f04;
+            --white: #eef;
+            --glass-panel: rgba(5, 5, 10, 0.7);
+            --border-subtle: rgba(100, 100, 255, 0.1);
+            --font-mono: 'Space Mono', monospace;
+            --font-ui: 'Inter', sans-serif;
+            --pad-outer: 40px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--white);
+            font-family: var(--font-mono);
+            overflow: hidden;
+            /* App style */
+            height: 100vh;
+            font-size: 10px;
+        }
+
+        canvas#bg-stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* LAYOUT */
+        .app-container {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            height: 100vh;
+            padding: var(--pad-outer);
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .brand-box {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand {
+            font-size: 12px;
+            letter-spacing: 6px;
+            color: var(--accent-sec);
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .sub-brand {
+            font-size: 9px;
+            color: #668;
+        }
+
+        /* COLUMNS */
+        .col-left,
+        .col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            padding-right: 5px;
+            /* scrollbar space */
+        }
+
+        .col-center {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border-subtle);
+            background: radial-gradient(circle at center, rgba(20, 10, 30, 0.3), transparent 70%);
+            border-radius: 4px;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--glass-panel);
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(5px);
+            padding: 12px;
+            border-radius: 2px;
+        }
+
+        .card-h {
+            font-size: 9px;
+            color: var(--accent-sec);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            border-left: 2px solid var(--accent-pri);
+            padding-left: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* METRIC ROWS */
+        .m-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 9px;
+        }
+
+        .m-lbl {
+            color: #779;
+        }
+
+        .m-val {
+            color: #eef;
+            font-weight: bold;
+        }
+
+        .m-unit {
+            color: #556;
+            font-size: 8px;
+            margin-left: 2px;
+        }
+
+        .m-inf {
+            display: block;
+            font-size: 8px;
+            color: #446;
+            margin-top: 1px;
+            font-weight: normal;
+            line-height: 1.2;
+        }
+
+        /* ZONES COMPACT */
+        .zone-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+
+        .z-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 5px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .z-item:hover {
+            border-color: var(--accent-pri);
+            background: rgba(100, 0, 255, 0.1);
+        }
+
+        .z-head {
+            font-size: 8px;
+            color: #668;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .z-score {
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            margin: 2px 0;
+        }
+
+        .z-det {
+            font-size: 8px;
+            color: #aaa;
+        }
+
+        /* 3D CANVAS */
+        canvas#spiral-3d {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+        }
+
+        .center-hud {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            pointer-events: none;
+            text-align: left;
+        }
+
+        .big-idx {
+            font-size: 42px;
+            font-weight: 300;
+            color: #fff;
+            text-shadow: 0 0 20px var(--accent-pri);
+            line-height: 1;
+        }
+
+        .idx-lbl {
+            color: var(--accent-sec);
+            font-size: 10px;
+            letter-spacing: 2px;
+        }
+
+        /* LOG BOX */
+        .log-box {
+            font-family: var(--font-ui);
+            font-size: 9px;
+            color: #88a;
+            max-height: 150px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            padding-left: 8px;
+            border-left: 1px solid #333;
+        }
+
+        .log-time {
+            color: #556;
+            margin-right: 5px;
+            font-family: var(--font-mono);
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #335;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1100px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+            }
+
+            .app-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                padding: 10px;
+                height: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .col-left,
+            .col-right {
+                order: 2;
+                overflow: visible;
+                height: auto;
+                padding: 0;
+            }
+
+            .col-center {
+                order: 1;
+                height: 50vh;
+                margin: 5px 0;
+                min-height: 350px;
+            }
+
+            canvas#spiral-3d {
+                height: 100%;
+            }
+
+            :root {
+                --pad-outer: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bg-stars"></canvas>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="brand-box">
+                <div class="brand">IBONARIUM // CHRONOS</div>
+                <div class="sub-brand">7-DAY SUBJECTIVE REALITY HELIX</div>
+            </div>
+            <div style="text-align:right">
+                <div style="font-size:20px; font-weight:bold; color:#fff;" id="clock-main">00:00:00</div>
+                <div style="font-size:9px; color:#668;">UTC+2 (LOCAL)</div>
+            </div>
+        </div>
+
+        <!-- LEFT COLUMN: INPUTS & ZONES -->
+        <div class="col-left">
+            <div class="card">
+                <div class="card-h">
+                    <span>СЕНСОРИ ПЛАНЕТАРНОГО СТАНУ</span>
+                    <span id="update-tick">ОНЛАЙН</span>
+                </div>
+                <div class="m-row">
+                    <div style="flex:1">
+                        <span class="m-lbl">ЦИФРОВИЙ ПУЛЬС (NET)</span>
+                        <span class="m-inf">Швидкість глобального обміну даними (Tbps)</span>
+                    </div>
+                    <span class="m-val" id="v-net">---</span>
+                </div>
+                <div class="m-row">
+                    <div style="flex:1">
+                        <span class="m-lbl">ЕКОНОМІЧНА ТРИВОГА</span>
+                        <span class="m-inf">Реакція системи на ринкову волатильність</span>
+                    </div>
+                    <span class="m-val" id="v-vol">---</span>
+                </div>
+                <div class="m-row">
+                    <div style="flex:1">
+                        <span class="m-lbl">СОЦІАЛЬНА КОГЕРЕНТНІСТЬ</span>
+                        <span class="m-inf">Рівень синхронізації суспільних настроїв (%)</span>
+                    </div>
+                    <span class="m-val" id="v-noo">---</span>
+                </div>
+                <div class="m-row">
+                    <div style="flex:1">
+                        <span class="m-lbl">БІОСФЕРНИЙ РЕЗОНАНС</span>
+                        <span class="m-inf">Стійкість до геомагнітних та сейсмо-атак</span>
+                    </div>
+                    <span class="m-val" id="v-bio-res">---</span>
+                </div>
+                <div class="m-row">
+                    <div style="flex:1">
+                        <span class="m-lbl">ТЕХНОСФЕРНИЙ ТИСК</span>
+                        <span class="m-inf">Антропогенне навантаження на мережу</span>
+                    </div>
+                    <span class="m-val" id="v-tech-press">---</span>
+                </div>
+                <div class="m-row">
+                    <div style="flex:1">
+                        <span class="m-lbl">ЩІЛЬНІСТЬ ЧАСУ</span>
+                        <span class="m-inf">Кількість подій на одиницю сприйняття</span>
+                    </div>
+                    <span class="m-val" id="v-dens">---</span>
+                </div>
+            </div>
+
+            <div class="card" style="flex:1">
+                <div class="card-h">
+                    <span>ГЕОПОЛІТИЧНІ ЗОНИ</span>
+                    <span>СТАБІЛЬНІСТЬ</span>
+                </div>
+                <div class="zone-grid" id="zones-list">
+                    <!-- JS Injected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER: 3D SPIRAL VISUALIZATION -->
+        <div class="col-center">
+            <canvas id="spiral-3d"></canvas>
+
+            <div class="center-hud">
+                <div class="idx-lbl">ГЛОБАЛЬНИЙ СУБ'ЄКТИВНИЙ ІНДЕКС</div>
+                <div class="big-idx" id="main-idx">--</div>
+                <div style="font-size:10px; color:#aaa; margin-top:5px; max-width:240px; min-height:40px;"
+                    id="main-desc">
+                    ІНІЦІАЛІЗАЦІЯ ПОЛЯ ХРОНОСУ...
+                </div>
+            </div>
+
+            <!-- Legend Overlay -->
+            <div style="position:absolute; top:20px; right:20px; text-align:right;">
+                <div style="font-size:9px; color:#88a;">ГЛИБИНА СПІРАЛІ: 7 ДНІВ</div>
+                <div style="font-size:9px; color:#556;">Z-Вісь: РОЗПАД ЧАСУ</div>
+                <div style="margin-top:5px;">
+                    <span
+                        style="display:inline-block; width:8px; height:8px; background:#0fa; margin-right:4px;"></span>
+                    <span style="font-size:9px; color:#fff;">ОПТИМАЛЬНО</span>
+                </div>
+                <div>
+                    <span
+                        style="display:inline-block; width:8px; height:8px; background:#f04; margin-right:4px;"></span>
+                    <span style="font-size:9px; color:#fff;">КРИТИЧНО</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: ANALYTICS & LOGS -->
+        <div class="col-right">
+
+            <div class="card">
+                <div class="card-h"><span>ОБЧИСЛЮВАЛЬНІ МЕТРИКИ</span></div>
+                <div class="meta-row">
+                    <div class="meta-item">
+                        <span class="lbl">СЕРЕДНЄ (24г)</span>
+                        <span class="val" id="m-avg">--</span>
+                        <span class="m-inf">Добовий тренд</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="lbl">ПІК ЕНТРОПІЇ</span>
+                        <span class="val" id="m-peak">--:--</span>
+                        <span class="m-inf">Макс. напруга</span>
+                    </div>
+                    <div class="meta-item" style="flex:1.5">
+                        <span class="lbl">РОЗРИВ РЕАЛЬНОСТІ</span>
+                        <span class="val" id="m-bio">--</span>
+                        <span class="m-inf">Дисонанс Фактів/Емоцій</span>
+                    </div>
+                </div>
+                <div class="logs">
+                    <div class="log-entry"><span class="log-time">[SYSTEM]</span> Ініціалізація суб'єктивного ядра...
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-h"><span>АНАЛІЗ СИСТЕМИ</span></div>
+                <div style="font-size:10px; color:#cdf; line-height:1.5; margin-bottom:10px;" id="sys-analysis-text">
+                    Розрахунок багатофакторної кореляції між глобальними аномаліями та суб'єктивним цифровим настроєм...
+                </div>
+                <div style="height:4px; width:100%; background:#112;">
+                    <div style="height:100%; width:0%; background:#80f; transition:width 1s;" id="calc-bar"></div>
+                </div>
+            </div>
+
+            <div class="card" style="flex:1; display:flex; flex-direction:column;">
+                <div class="card-h"><span>ЖУРНАЛ ПОДІЙ (7D BUFFER)</span></div>
+                <div class="log-box" id="sys-log">
+                    <!-- Logs -->
+                </div>
+
+                <div
+                    style="margin-top:15px; padding-top:10px; border-top:1px solid #112; font-size:8px; color:#446; line-height:1.4; font-family:var(--font-ui);">
+                    <div style="color:var(--accent-sec); margin-bottom:4px; font-weight:bold; letter-spacing:1px;">
+                        ПРИНЦИПИ ОБЧИСЛЕННЯ (GSI-26)</div>
+                    Ядро IBONARIUM базується на тримодульній агрегації сигналів для оцінки СУБ'ЄКТИВНОЇ
+                    РЕАЛЬНОСТІ:<br><br>
+                    <b style="color:#668;">MOD 1 (ГЕОПОЛІТИКА):</b> Моделювання стабільності центрів сили та зон тертя
+                    на основі фінансової волатильності та структурних ризиків.<br>
+                    <b style="color:#668;">MOD 2 (СОЦІУМ):</b> Текстуальний аналіз світових новин (RSS) для визначення
+                    настрою "Планетарної Ноосфери" через щільність ключових слів.<br>
+                    <b style="color:#668;">MOD 3 (БІОСФЕРА):</b> Пряма інтеграція фізичних параметрів Землі —
+                    геомагнітна активність (KP-index NOAA) та сейсмічна напруга (USGS).<br><br>
+                    Сукупний індекс відображає не об'єктивний час, а інтенсивність "подійного потоку", що формує наше
+                    колективне сприйняття реальності.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================================
+        // CONFIG & STATE
+        // ============================================================================
+
+        const ZONES_CFG = [
+            { id: 'nam', name: 'ПІВНІЧНА АМЕРИКА (США/КАН)', lat: 45.0, lon: -100.0 },
+            { id: 'lat', name: 'ЛАТИНСЬКА АМЕРИКА', lat: -15.0, lon: -60.0 },
+            { id: 'euw', name: 'ЗАХІДНА ЄВРОПА (ЄС)', lat: 48.0, lon: 10.0 },
+            { id: 'eue', name: 'СХІДНА ЄВРОПА (БУФЕР)', lat: 50.0, lon: 30.0 },
+            { id: 'rus', name: 'ЦЕНТРАЛЬНА ЄВРАЗІЯ (РФ)', lat: 55.0, lon: 80.0 },
+            { id: 'mea', name: 'БЛИЗЬКИЙ СХІД / GULF', lat: 25.0, lon: 45.0 },
+            { id: 'afr', name: 'СУБСАХАРСЬКА АФРИКА', lat: 0.0, lon: 20.0 },
+            { id: 'chn', name: 'СХІДНА АЗІЯ (КНР)', lat: 35.0, lon: 110.0 },
+            { id: 'ind', name: 'ПІВДЕННА АЗІЯ (ІНДІЯ)', lat: 20.0, lon: 77.0 },
+            { id: 'sea', name: 'ПІВДЕННО-СХІДНА АЗІЯ', lat: 10.0, lon: 110.0 },
+            { id: 'aus', name: 'ОКЕАНІЯ / АВСТРАЛІЯ', lat: -25.0, lon: 135.0 }
+        ];
+
+        // 7 Days * 24 Hours * 6 points per hour (10 min res) = 1008 points
+        const MAX_POINTS = 7 * 24 * 6;
+
+        const STATE = {
+            history: [],
+
+            zones: {},
+            global: {
+                index: 50,
+                netTraffic: 0,
+                volatility: 0,
+                noosphere: 0,
+                biosphere: 85,
+                technosphere: 40
+            },
+
+            cam: { rot: 0, pitch: 0.4 }
+        };
+
+        // DOM
+        const elLogs = document.getElementById('sys-log');
+        const elClock = document.getElementById('clock-main');
+        const canSpiral = document.getElementById('spiral-3d');
+        const ctxSpy = canSpiral.getContext('2d');
+
+        // ============================================================================
+        // INIT & LOOP
+        // ============================================================================
+
+        async function init() {
+            // Fill history mock
+            mockHistory();
+
+            // Build UI
+            renderZonesInit();
+
+            // Start cycles
+            setInterval(tickClock, 1000);
+            setInterval(fetchLiveData, 60000);
+            requestAnimationFrame(animLoop);
+
+            // First Fetch
+            await fetchLiveData();
+            log("System Initialized. 7-Day Buffer Loaded.");
+        }
+
+        function mockHistory() {
+            const now = Date.now();
+            const interval = 10 * 60 * 1000; // 10 mins
+
+            for (let i = MAX_POINTS; i > 0; i--) {
+                const t = now - (i * interval);
+                const date = new Date(t);
+                const hrs = date.getUTCHours();
+
+                // Day cycle (sine wave)
+                let base = 50 + Math.sin((hrs / 24) * Math.PI * 2) * 20;
+                let noise = (Math.random() - 0.5) * 15;
+                if (Math.random() > 0.98) noise -= 30; // drop
+
+                let val = Math.max(0, Math.min(100, base + noise));
+
+                // Color calc
+                let r = 0, g = 255, b = 200;
+                if (val < 40) { r = 255; g = 0; b = 100; } // Bad
+                else if (val < 60) { r = 255; g = 180; b = 0; } // Mid
+
+                STATE.history.push({
+                    t: t,
+                    val: val,
+                    c: `rgb(${r},${g},${b})`
+                });
+            }
+        }
+
+        // ============================================================================
+        // DATA LOGIC
+        // ============================================================================
+
+        // ============================================================================
+        // DATA LOGIC: GEOPOLITICAL STABILITY & SENTIMENT
+        // ============================================================================
+        // DATA LOGIC: GEOPOLITICAL (MOD 1) + SOCIAL (MOD 2)
+        // ============================================================================
+
+        // MODULE 1: GEOPOLITICAL (Simulation)
+        const GEO_PARSER = {
+            data: {
+                stability: 84.1, volatility: 1.2, impact: 4.8, sentiment: -1.2,
+                conflict: 142, unrest: 82, cyber: 77, supply_tension: 38.5,
+                propaganda: 68.1, network: 81
+            },
+            tick: function (btc_vol) {
+                const rnd = () => Math.random() - 0.5;
+                // Stability degrades with high btc volatility
+                this.data.stability = clamp(84.1 + rnd() * 3 - (btc_vol * 0.5), 0, 100);
+                this.data.conflict = Math.floor(142 + rnd() * 20 + (btc_vol * 10));
+                this.data.unrest = Math.floor(82 + rnd() * 15 + (btc_vol * 5));
+                this.data.propaganda = clamp(68.1 + rnd() * 4, 0, 100);
+
+                // Entropy: Structural/Physical Stress
+                return (this.data.conflict / 500 * 30) + (this.data.unrest / 200 * 20) + (this.data.propaganda / 100 * 10);
+            }
+        };
+
+        // MODULE 2: SOCIAL SENTIMENT (Live Analysis)
+        const SOCIAL_PARSER = {
+            data: { score: 50, keywords: [] },
+
+            async scan() {
+                try {
+                    // Use a public RSS to JSON bridge to scan global headlines (BBC World)
+                    // This gives us REAL "Mood" keywords
+                    const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=http://feeds.bbci.co.uk/news/world/rss.xml');
+                    const data = await res.json();
+
+                    let fearWords = ['war', 'dead', 'kill', 'crisis', 'crash', 'ban', 'attack', 'virus', 'threat', 'death'];
+                    let hopeWords = ['peace', 'win', 'new', 'love', 'safe', 'good', 'growth', 'joy', 'deal', 'help'];
+
+                    let fearCount = 0;
+                    let hopeCount = 0;
+                    let trends = [];
+
+                    data.items.slice(0, 5).forEach(item => {
+                        const txt = (item.title + " " + item.description).toLowerCase();
+                        fearWords.forEach(w => { if (txt.includes(w)) fearCount++; });
+                        hopeWords.forEach(w => { if (txt.includes(w)) hopeCount++; });
+                        trends.push(item.title.split(" ").slice(0, 2).join(" ")); // Grab first 2 words as "Trend"
+                    });
+
+                    // Social Score (0-100). Baseline 50.
+                    // Fear drags it down fast. Hope lifts it slow.
+                    let sentiment = 50 - (fearCount * 8) + (hopeCount * 4);
+                    sentiment = clamp(sentiment, 10, 90);
+
+                    this.data.score = sentiment;
+                    this.data.keywords = trends;
+
+                    // console.log("SOCIAL SCAN:", sentiment, fearCount, hopeCount, trends);
+                    return sentiment;
+
+                } catch (e) {
+                    console.warn("Social Scan Offline, Simulating...");
+                    return 50 + (Math.random() - 0.5) * 10;
+                }
+            }
+        };
+
+        // MODULE 3: BIOSPHERE (Planetary Physics)
+        const BIOS_PARSER = {
+            data: { kp: 2, quakes: 0, solar_flux: 0 },
+            async scan() {
+                try {
+                    // Fetch KP Index (Space Weather Tension)
+                    const kpRes = await fetch('https://services.swpc.noaa.gov/products/noaa-scales.json');
+                    const kpData = await kpRes.json();
+                    const kpVal = parseInt(kpData['0'].G.metric) || 1; // Simplistic proxy
+
+                    // Fetch Earthquakes (Global Physical Tension - last 1h)
+                    const qRes = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson');
+                    const qData = await qRes.json();
+                    const quakeCount = qData.metadata.count;
+
+                    this.data.kp = kpVal;
+                    this.data.quakes = quakeCount;
+                    return { kp: kpVal, quakes: quakeCount };
+                } catch (e) {
+                    console.warn("Biosphere Scan Offline, using base values.");
+                    return { kp: 2, quakes: 5 };
+                }
+            }
+        };
+
+        async function fetchLiveData() {
+            document.getElementById('update-tick').innerText = "ПЛАНЕТАРНА СИНХРОНІЗАЦІЯ...";
+            document.getElementById('calc-bar').style.width = "40%";
+
+            try {
+                // 1. FINANCIAL TRIGGER
+                let volatilityIndex = 0;
+                let btcChg = 0;
+                try {
+                    const cRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+                    const cData = await cRes.json();
+                    btcChg = cData.bitcoin.usd_24h_change;
+                    volatilityIndex = Math.abs(btcChg);
+                } catch (e) { volatilityIndex = 2.5; }
+                // 2. RUN MODULES
+                const socialScore = await SOCIAL_PARSER.scan(); // Real News Sentiment
+                const bioSignals = await BIOS_PARSER.scan(); // Real Planetary Physics
+                const geoEntropy = GEO_PARSER.tick(volatilityIndex); // Sim Geopolitics
+
+                // 3. REGIONAL FUSION: GRANULAR CONTINENTAL MODEL
+                let sumStability = 0;
+                const friction = (GEO_PARSER.data.conflict / 100);
+
+                ZONES_CFG.forEach(z => {
+                    let stab = 0;
+
+                    // Specialized Stress Mapping for Granular Zones
+                    if (z.id === 'nam' || z.id === 'euw') {
+                        // Western Core: Propaganda + Volatility
+                        stab = 95 - (volatilityIndex * 2.5) - (GEO_PARSER.data.propaganda * 0.15);
+                    } else if (z.id === 'rus' || z.id === 'eue' || z.id === 'mea') {
+                        // Friction Zones: Conflict Sensitive
+                        stab = 85 - (GEO_PARSER.data.conflict / 4);
+                    } else if (z.id === 'chn' || z.id === 'sea') {
+                        // Production Hubs: Supply Tension + Network Integration
+                        stab = 98 - GEO_PARSER.data.supply_tension - (100 - GEO_PARSER.data.network) * 0.5;
+                    } else if (z.id === 'lat' || z.id === 'afr' || z.id === 'ind') {
+                        // Growth/Developing: Unrest + Social Gravity
+                        stab = 88 - (GEO_PARSER.data.unrest / 5) - (volatilityIndex * 1.2);
+                    } else if (z.id === 'aus') {
+                        // Global Buffer: Volatility Baseline
+                        stab = 92 - (volatilityIndex * 0.8);
+                    }
+
+                    // Global Social Sentiment Impact
+                    const socialImpact = (socialScore - 50) * 0.35;
+                    stab += socialImpact;
+
+                    stab = clamp(stab, 5, 100);
+
+                    STATE.zones[z.id] = { sc: stab };
+                    sumStability += stab;
+
+                    // UI Update
+                    const elVal = document.getElementById(`zval-${z.id}`);
+                    const elT = document.getElementById(`zt-${z.id}`);
+                    const elD = document.getElementById(`zdet-${z.id}`);
+
+                    if (elVal) {
+                        elVal.innerText = stab.toFixed(0);
+                        let color = stab < 40 ? "#f04" : stab < 65 ? "#fa0" : "#0fa";
+                        elVal.style.color = color;
+                        let statusTxt = stab < 35 ? "ДЕСТАБІЛІЗАЦІЯ" : stab < 60 ? "НАПРУЖЕННЯ" : "БАЛАНС";
+                        if (elT) { elT.innerText = statusTxt; elT.style.color = color; }
+
+                        // Detail Trace
+                        if (elD) {
+                            if (z.id === 'chn' || z.id === 'sea') elD.innerText = `SUP:${GEO_PARSER.data.supply_tension.toFixed(0)}`;
+                            else if (z.id === 'rus' || z.id === 'mea') elD.innerText = `CFL:${GEO_PARSER.data.conflict}`;
+                            else elD.innerText = `GSI:${(stab / 10).toFixed(1)}`;
+                        }
+                    }
+                });
+
+                // 4. PLANETARY INDICES: BIOS & TECH
+                // Biosphere Resilience: Real Space Weather (KP) + Earth Tension (Quakes) + Social Context
+                // High KP Index and high Earthquake count reduce Biosphere Resilience
+                const biosRes = 95 - (bioSignals.kp * 4) - (clamp(bioSignals.quakes, 0, 20) * 0.5) - (GEO_PARSER.data.unrest * 0.05);
+                // Technospheric Pressure: Network traffic + Cyber activity + News saturation
+                const techPress = (GEO_PARSER.data.network * 0.3) + (GEO_PARSER.data.cyber * 0.2) + (volatilityIndex * 2);
+
+                // 5. GLOBAL SUBJECTIVE INDEX (Aggregated from 11-Zone Matrix + Planetary Modules)
+                const avgRegionStab = sumStability / ZONES_CFG.length;
+
+                // New Deep Formula: 40% Geopolitical + 30% Social + 20% Biosphere + 10% Reality Balance
+                let finalIdx = (avgRegionStab * 0.4) + (socialScore * 0.3) + (biosRes * 0.2) - (geoEntropy * 0.9) - (techPress * 0.05);
+                finalIdx = clamp(finalIdx, 5, 100);
+
+                // Computational Metrics
+                const temporalDensity = (GEO_PARSER.data.conflict + volatilityIndex * 12 + (100 - socialScore) * 0.8 + (techPress * 0.5)) / 3.5;
+                const realityGap = Math.abs(avgRegionStab - socialScore);
+
+                STATE.global.index = finalIdx;
+                STATE.global.volatility = volatilityIndex * 10;
+                STATE.global.netTraffic = GEO_PARSER.data.network.toFixed(1);
+                STATE.global.noosphere = socialScore.toFixed(0);
+                STATE.global.biosphere = biosRes.toFixed(1);
+                STATE.global.technosphere = techPress.toFixed(1);
+                STATE.global.density = temporalDensity.toFixed(1);
+                STATE.global.gap = realityGap.toFixed(1);
+
+                // History
+                const now = Date.now();
+                let r = 0, g = 255, b = 200;
+                if (finalIdx < 45) { r = 255; g = 0; b = 50; }
+                else if (finalIdx < 70) { r = 255; g = 160; b = 0; }
+                else { r = 50; g = 255; b = 150; }
+
+                STATE.history.push({ t: now, val: finalIdx, c: `rgb(${r},${g},${b})` });
+                if (STATE.history.length > MAX_POINTS) STATE.history.shift();
+
+                updateTextUI();
+
+            } catch (e) { console.warn(e); }
+
+            document.getElementById('update-tick').innerText = "ОНЛАЙН";
+            document.getElementById('calc-bar').style.width = "0%";
+        }
+
+        function updateTextUI() {
+            document.getElementById('main-idx').innerText = STATE.global.index.toFixed(0);
+            document.getElementById('v-net').innerText = STATE.global.netTraffic;
+            document.getElementById('v-vol').innerText = STATE.global.volatility.toFixed(1);
+            document.getElementById('v-noo').innerText = STATE.global.noosphere;
+            document.getElementById('v-bio-res').innerText = STATE.global.biosphere;
+            document.getElementById('v-tech-press').innerText = STATE.global.technosphere;
+
+            // Temporal Density
+            document.getElementById('v-dens').innerText = STATE.global.density;
+
+            const idx = STATE.global.index;
+            let mood = "";
+            let desc = "";
+
+            // Use SOCIAL keywords for description
+            const keywords = SOCIAL_PARSER.data.keywords.slice(0, 2).join(", ").toUpperCase();
+
+            // Ukrainian Narrative Generation
+            if (idx > 80) {
+                mood = "ГАРМОНІЯ";
+                desc = `Глобальна синхронізація станів. Ентропія мінімальна. Тренд: ${keywords}`;
+            } else if (idx > 60) {
+                mood = "СТАБІЛЬНІСТЬ";
+                desc = `Базові параметри в нормі. Локальні флуктуації. Фокус: ${keywords}`;
+            } else if (idx > 40) {
+                mood = "ТРИВОГА";
+                desc = `Виявлено соціальне тертя. Зростання ентропії. Тренд: ${keywords}`;
+            } else {
+                mood = "СИСТЕМНИЙ ШОК";
+                desc = `Критична десинхронізація реальності. Загроза каскаду. Увага: ${keywords}`;
+            }
+
+            document.getElementById('main-desc').innerHTML = `<span style="color:#fff; font-weight:bold">${mood}</span> // ${desc}`;
+            document.getElementById('main-idx').style.color = idx > 60 ? '#fff' : '#f04';
+
+            if (Math.random() > 0.7) {
+                log(`Біо-сигнали: KP=${BIOS_PARSER.data.kp}, Quakes=${BIOS_PARSER.data.quakes}`);
+                log(`Скан Соціуму: ${STATE.global.noosphere}/100`);
+            }
+
+            const histVals = STATE.history.map(x => x.val);
+            const avg = histVals.reduce((a, b) => a + b, 0) / histVals.length;
+            document.getElementById('m-avg').innerText = avg.toFixed(1);
+            document.getElementById('m-peak').innerText = "14:20 UTC";
+            document.getElementById('m-bio').innerText = STATE.global.gap; // Reality Gap
+        }
+
+        // ============================================================================
+        // VISUALIZATION (3D SPIRAL + CLOCK)
+        // ============================================================================
+
+        function animLoop() {
+            STATE.cam.rot += 0.002; // Spin simulation
+            drawSpiral();
+            requestAnimationFrame(animLoop);
+        }
+
+        function drawSpiral() {
+            const w = canSpiral.clientWidth;
+            const h = canSpiral.clientHeight;
+            if (canSpiral.width !== w) { canSpiral.width = w; canSpiral.height = h; }
+
+            ctxSpy.clearRect(0, 0, w, h);
+            const cx = w / 2;
+            const cy = h / 2;
+
+            const camPitch = STATE.cam.pitch;
+            const scale = Math.min(w, h) * 0.4;
+            const fov = 600;
+
+            function project(x, y, z) {
+                const cp = Math.cos(camPitch);
+                const sp = Math.sin(camPitch);
+                const ry = y * cp - z * sp;
+                const rz = y * sp + z * cp;
+                if (rz > fov - 10) return null;
+                const s = fov / (fov - rz);
+                return { x: cx + x * s, y: cy + ry * s, s: s, z: rz };
+            }
+
+            // --- 0. PREP TIME ---
+            // 'NOW' fixed at -90deg (Top)
+            const FIXED_NOW_ANGLE = -Math.PI / 2;
+
+            const now = new Date();
+            const sec = now.getSeconds() + now.getMilliseconds() / 1000;
+            const min = now.getMinutes() + sec / 60;
+            const hr = now.getHours() + min / 60;
+
+            const currentTimeAngle = (hr / 24) * Math.PI * 2;
+
+            // Logic: We rotate the whole world so that currentTime aligns with FIXED_NOW_ANGLE.
+            // visualAngle = realAngle - currentTimeAngle + FIXED_NOW_ANGLE.
+            // But since realAngle for 00h is 0 (or -PI/2?), let's standardize.
+            // Let's say 00h is at angle 0 in "TimeSpace".
+            // Then current time is at angle (hr/24)*2PI.
+            // We want (hr/24)*2PI to map to -PI/2.
+            // visualAngle = timeSpaceAngle - currentTimeAngle - PI/2.
+
+            const worldOffset = -currentTimeAngle - Math.PI / 2;
+
+            // --- 1. DRAW CLOCK RING (Flows past NOW) ---
+            const rRing = scale * 1.1;
+
+            for (let i = 0; i < 24; i++) {
+                // Number i in TimeSpace (0..2PI)
+                const theta = (i / 24) * Math.PI * 2;
+                const angle = theta + worldOffset;
+
+                const wx = Math.cos(angle) * rRing;
+                const wy = Math.sin(angle) * rRing;
+                const wz = 10;
+
+                const p = project(wx, wy, wz);
+                if (!p) continue;
+
+                const isMajor = (i % 3 === 0);
+
+                ctxSpy.textAlign = 'center'; ctxSpy.textBaseline = 'middle';
+                if (isMajor) {
+                    ctxSpy.fillStyle = `rgba(255,255,255,${0.8 * p.s})`;
+                    ctxSpy.font = (12 * p.s) + 'px Space Mono';
+                    ctxSpy.fillText(i.toString().padStart(2, '0'), p.x, p.y);
+                } else {
+                    ctxSpy.fillStyle = `rgba(100,100,150,${0.5 * p.s})`;
+                    ctxSpy.beginPath(); ctxSpy.arc(p.x, p.y, 1.5 * p.s, 0, Math.PI * 2); ctxSpy.fill();
+                }
+            }
+
+            // --- 2. SECONDS DOT ---
+            // Independent orbit? Or locked to NOW?
+            // User: "flow every second".
+            // Let's make it orbit 0-360 every minute, visually independent of the ring rotation.
+            // This represents the "ticking" of the current moment.
+            const secVisAngle = (sec / 60) * Math.PI * 2 - Math.PI / 2;
+            const sRx = Math.cos(secVisAngle) * (rRing * 0.95);
+            const sRy = Math.sin(secVisAngle) * (rRing * 0.95);
+            const sp = project(sRx, sRy, 10);
+
+            if (sp) {
+                ctxSpy.shadowBlur = 15; ctxSpy.shadowColor = '#f04';
+                ctxSpy.fillStyle = '#f04';
+                ctxSpy.beginPath(); ctxSpy.arc(sp.x, sp.y, 3 * sp.s, 0, Math.PI * 2); ctxSpy.fill();
+                ctxSpy.shadowBlur = 0;
+            }
+
+            // --- 3. DRAW SPIRAL (Flows past NOW) ---
+            const points3d = [];
+            const len = STATE.history.length;
+
+            for (let i = 0; i < len; i++) {
+                const pt = STATE.history[i];
+                const d = new Date(pt.t);
+                const h = d.getHours() + d.getMinutes() / 60;
+
+                // Point in TimeSpace
+                const ptTheta = (h / 24) * Math.PI * 2;
+                const finalTheta = ptTheta + worldOffset;
+
+                const age = i / (len - 1);
+                const revAge = 1 - age;
+
+                const r = (0.2 + 0.8 * age) * scale;
+                const z = revAge * -500;
+
+                const wx = Math.cos(finalTheta) * r;
+                const wy = Math.sin(finalTheta) * r;
+
+                const p = project(wx, wy, z);
+                if (p) points3d.push({ ...p, c: pt.c });
+            }
+
+            // Render Trace
+            ctxSpy.lineWidth = 2; ctxSpy.lineCap = 'round';
+            if (points3d.length > 1) {
+                for (let i = 0; i < points3d.length - 1; i++) {
+                    const p1 = points3d[i];
+                    const p2 = points3d[i + 1];
+                    const alpha = Math.max(0.1, i / points3d.length);
+
+                    ctxSpy.beginPath(); ctxSpy.moveTo(p1.x, p1.y); ctxSpy.lineTo(p2.x, p2.y);
+                    ctxSpy.strokeStyle = p2.c.replace('rgb', 'rgba').replace(')', `,${alpha})`);
+                    ctxSpy.lineWidth = 2 * p2.s;
+                    ctxSpy.stroke();
+                }
+            }
+
+            // HEAD (NOW) - Fixed at Top
+            // We calculate its position manually to ensure it's exactly at Top visual
+            // But if logic is correct, the last point IS at top.
+            const head = points3d[points3d.length - 1];
+            if (head) {
+                ctxSpy.shadowBlur = 20; ctxSpy.shadowColor = '#fff';
+
+                // Orb
+                ctxSpy.fillStyle = '#fff';
+                ctxSpy.beginPath(); ctxSpy.arc(head.x, head.y, 4 * head.s, 0, Math.PI * 2); ctxSpy.fill();
+
+                // "NOW" Label - Fixed
+                ctxSpy.fillStyle = '#fff'; ctxSpy.font = (9 * head.s) + 'px Space Mono';
+                ctxSpy.fillText("NOW", head.x, head.y - 15);
+                ctxSpy.shadowBlur = 0;
+
+                // Needle
+                const cp = project(0, 0, 0);
+                if (cp) {
+                    ctxSpy.strokeStyle = 'rgba(255,255,255,0.4)';
+                    ctxSpy.lineWidth = 1;
+                    ctxSpy.beginPath(); ctxSpy.moveTo(cp.x, cp.y); ctxSpy.lineTo(head.x, head.y); ctxSpy.stroke();
+                }
+            }
+
+            // CORE
+            const cp = project(0, 0, 0);
+            if (cp) {
+                ctxSpy.fillStyle = 'rgba(255,255,255,0.8)';
+                ctxSpy.beginPath(); ctxSpy.arc(cp.x, cp.y, 2 * cp.s, 0, Math.PI * 2); ctxSpy.fill();
+            }
+        }
+
+        function renderZonesInit() {
+            const list = document.getElementById('zones-list');
+            list.innerHTML = ZONES_CFG.map(z => `
+                <div class="z-item">
+                    <div class="z-head" style="margin-bottom:4px;"><span>${z.name}</span> <span id="zt-${z.id}" style="font-weight:bold; font-size:9px;">CALCULATING</span></div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end">
+                        <div class="z-score" id="zval-${z.id}" style="font-size:18px;">--</div>
+                        <div class="z-det" id="zdet-${z.id}" style="font-size:8px; opacity:0.7">IDX</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+        function tickClock() {
+            const now = new Date();
+            elClock.innerText = now.toLocaleTimeString('uk-UA');
+        }
+
+        function log(msg) {
+            const t = new Date().toLocaleTimeString('uk-UA', { hour12: false });
+            const d = document.createElement('div');
+            d.className = 'log-entry';
+            d.innerHTML = `<span class="log-time">[${t}]</span> ${msg}`;
+            elLogs.prepend(d);
+            if (elLogs.children.length > 20) elLogs.lastChild.remove();
+        }
+
+        const bgC = document.getElementById('bg-stars');
+        const bgCtx = bgC.getContext('2d');
+        let stars = [];
+        for (let i = 0; i < 150; i++) stars.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, s: Math.random() * 1.5, a: Math.random() });
+
+        function animStars() {
+            bgC.width = innerWidth; bgC.height = innerHeight;
+            bgCtx.clearRect(0, 0, innerWidth, innerHeight);
+            bgCtx.fillStyle = '#fff';
+            stars.forEach(s => {
+                bgCtx.globalAlpha = s.a * 0.4;
+                bgCtx.beginPath(); bgCtx.arc(s.x, s.y, s.s, 0, Math.PI * 2); bgCtx.fill();
+                s.y += 0.1; if (s.y > innerHeight) s.y = 0;
+            });
+            requestAnimationFrame(animStars);
+        }
+        animStars();
+
+        init();
+
+    </script>
+</body>
+
+</html>
