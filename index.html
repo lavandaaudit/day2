@@ -18,8 +18,8 @@
             --accent-sec: #0ff;
             --accent-warn: #f04;
             --white: #eef;
-            --glass-panel: rgba(5, 5, 10, 0.7);
-            --border-subtle: rgba(100, 100, 255, 0.1);
+            --glass-panel: rgba(5, 5, 10, 0.85);
+            --border-subtle: rgba(100, 100, 255, 0.15);
             --font-mono: 'Space Mono', monospace;
             --font-ui: 'Inter', sans-serif;
             --pad-outer: 40px;
@@ -108,14 +108,16 @@
             border: 1px solid var(--border-subtle);
             background: radial-gradient(circle at center, rgba(20, 10, 30, 0.3), transparent 70%);
             border-radius: 4px;
+            overflow: hidden; /* Ensure canvas doesn't overflow */
         }
 
         .card {
             background: var(--glass-panel);
             border: 1px solid var(--border-subtle);
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
             padding: 12px;
-            border-radius: 2px;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
 
         .card-h {
@@ -244,31 +246,46 @@
             background: #335;
         }
 
-        /* ALERTS */
+        /* NEW ALERTS STYLE - TECH/HUD */
         #alert-container {
             position: fixed;
-            top: 80px;
-            right: 20px;
+            top: 100px;
+            right: 40px; /* Aligned with padding */
             z-index: 1000;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            max-width: 320px;
+            gap: 10px;
+            max-width: 300px;
+            pointer-events: none;
         }
 
         .alert {
-            background: rgba(0, 0, 0, 0.95);
-            border-left: 4px solid;
-            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid;
+            padding: 10px;
             font-size: 9px;
+            font-family: var(--font-mono);
             line-height: 1.4;
-            animation: slideIn 0.3s ease-out;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            animation: glitch-slide 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+            pointer-events: auto;
+        }
+        
+        .alert::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: currentColor;
+            opacity: 0.5;
+            box-shadow: 0 0 10px currentColor;
         }
 
         .alert-critical {
             border-color: #f04;
             color: #f04;
+            background: repeating-linear-gradient(45deg, rgba(255,0,0,0.05), rgba(255,0,0,0.05) 10px, rgba(0,0,0,0.9) 10px, rgba(0,0,0,0.9) 20px);
         }
 
         .alert-warning {
@@ -281,13 +298,21 @@
             color: #0af;
         }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
+        @keyframes glitch-slide {
+            0% {
+                transform: translateX(50px);
                 opacity: 0;
+                clip-path: inset(0 100% 0 0);
             }
-
-            to {
+            20% {
+                transform: translateX(-10px);
+                opacity: 1;
+                clip-path: inset(0 0 0 0);
+            }
+            40% {
+                transform: translateX(5px);
+            }
+            100% {
                 transform: translateX(0);
                 opacity: 1;
             }
@@ -337,6 +362,13 @@
             :root {
                 --pad-outer: 15px;
             }
+            
+            #alert-container {
+                top: 60px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
         }
     </style>
 </head>
@@ -349,12 +381,12 @@
         <!-- HEADER -->
         <div class="header">
             <div class="brand-box">
-                <div class="brand">IBONARIUM·CHRONOS 7D·MODULE.2.Situation.de.fait .LAVANDAAUDIT.PROJECT.2026</div>
-                <div class="sub-brand">PLANETARY CONSCIOUSNESS INDEX · MULTI-LAYER ANALYSIS</div>
+                <div class="brand">IBONARIUM·CHRONOS 7D·PLANETARY</div>
+                <div class="sub-brand">PLANETARY CONSCIOUSNESS INDEX · GLOBAL AGGREGATE</div>
             </div>
             <div style="text-align:right">
                 <div style="font-size:20px; font-weight:bold; color:#fff;" id="clock-main">00:00:00</div>
-                <div style="font-size:9px; color:#668;">UTC+2 (LOCAL)</div>
+                <div style="font-size:9px; color:#668;">UTC (GLOBAL)</div>
             </div>
         </div>
 
@@ -398,40 +430,40 @@
 
             <div class="card">
                 <div class="card-h">
-                    <span>🌍 EARTH PHYSICAL LAYER</span>
+                    <span>🌍 EARTH PHYSICAL LAYER (GLOBAL)</span>
                     <span id="earth-status">СИНХР...</span>
                 </div>
                 <div class="layer-box layer-earth">
                     <div class="layer-title">
-                        <span>ПЛАНЕТАРНЕ ТІЛО</span>
+                        <span>ПЛАНЕТАРНЕ ТІЛО (AVG)</span>
                         <span class="layer-score" id="earth-score">--</span>
                     </div>
                     <div class="m-row">
-                        <span class="m-lbl">Temperature (°C)</span>
+                        <span class="m-lbl">Avg Temperature (°C)</span>
                         <span class="m-val" id="v-temp">--</span>
                     </div>
                     <div class="m-row">
-                        <span class="m-lbl">Pressure (hPa)</span>
+                        <span class="m-lbl">Mean Pressure (hPa)</span>
                         <span class="m-val" id="v-press">--</span>
                     </div>
                     <div class="m-row">
-                        <span class="m-lbl">Humidity (%)</span>
+                        <span class="m-lbl">Active Zones (Precip)</span>
                         <span class="m-val" id="v-hum">--</span>
                     </div>
                     <div class="m-row">
-                        <span class="m-lbl">Wind Speed (м/с)</span>
+                        <span class="m-lbl">Global Wind Index</span>
                         <span class="m-val" id="v-wind">--</span>
                     </div>
                     <div class="m-row">
-                        <span class="m-lbl">UV Index</span>
+                        <span class="m-lbl">UV Max (Equator)</span>
                         <span class="m-val" id="v-uv">--</span>
                     </div>
                     <div class="m-row">
-                        <span class="m-lbl">Air Quality (AQI)</span>
+                        <span class="m-lbl">Atmosphere Stability</span>
                         <span class="m-val" id="v-aqi">--</span>
                     </div>
                     <div class="layer-desc" id="earth-desc">
-                        Очікування атмосферних даних...
+                        Агрегація глобальних метеоданих...
                     </div>
                 </div>
             </div>
@@ -440,7 +472,7 @@
                 <div class="card-h"><span>📊 WEIGHT MATRIX</span></div>
                 <div style="font-size:8px; color:#668; line-height:1.6; font-family:var(--font-ui);">
                     <b style="color:#f80;">SPACE</b> = 0.35×Kp + 0.25×SW_speed + 0.25×|Bz| + 0.15×Density<br>
-                    <b style="color:#0af;">EARTH</b> = 0.30×TempDev + 0.20×PressDev + 0.20×AQI + 0.15×UV + 0.15×Wind<br>
+                    <b style="color:#0af;">EARTH</b> = Global Avg Metrics (4 key points)<br>
                     <b style="color:#f0f;">HUMAN</b> = 0.40×Sentiment + 0.30×Market + 0.30×Social<br><br>
                     <b style="color:#80f;">IBONARIUM</b> = 0.4×SPACE + 0.3×EARTH + 0.3×HUMAN
                 </div>
@@ -462,21 +494,21 @@
 
             <div style="position:absolute; top:20px; right:20px; text-align:right;">
                 <div style="font-size:9px; color:#88a;">REAL-TIME PLANETARY STATE</div>
-                <div style="font-size:9px; color:#556;">3-LAYER FUSION MODEL</div>
+                <div style="font-size:9px; color:#556;">HOLOGRAPHIC PROJECTION</div>
                 <div style="margin-top:8px;">
                     <span
                         style="display:inline-block; width:8px; height:8px; background:#f80; margin-right:4px;"></span>
-                    <span style="font-size:9px; color:#fff;">SPACE</span>
+                    <span style="font-size:9px; color:#fff;">SPACE FLUX</span>
                 </div>
                 <div>
                     <span
                         style="display:inline-block; width:8px; height:8px; background:#0af; margin-right:4px;"></span>
-                    <span style="font-size:9px; color:#fff;">EARTH</span>
+                    <span style="font-size:9px; color:#fff;">EARTH GRID</span>
                 </div>
                 <div>
                     <span
                         style="display:inline-block; width:8px; height:8px; background:#f0f; margin-right:4px;"></span>
-                    <span style="font-size:9px; color:#fff;">HUMAN</span>
+                    <span style="font-size:9px; color:#fff;">HUMAN NODES</span>
                 </div>
             </div>
         </div>
@@ -544,10 +576,10 @@
                 <div
                     style="margin-top:15px; padding-top:10px; border-top:1px solid #112; font-size:8px; color:#446; line-height:1.4; font-family:var(--font-ui);">
                     <div style="color:var(--accent-sec); margin-bottom:4px; font-weight:bold; letter-spacing:1px;">
-                        IBONARIUM STATE VECTOR v2.0</div>
+                        IBONARIUM STATE VECTOR v2.1</div>
                     Інтегральний індекс планетарної події через багатошарову агрегацію:<br><br>
                     <b style="color:#f80;">КОСМОС</b> — нервова система (геомагнітна активність, сонячний вітер)<br>
-                    <b style="color:#0af;">ЗЕМЛЯ</b> — тіло (атмосферні параметри, фізичні умови)<br>
+                    <b style="color:#0af;">ЗЕМЛЯ</b> — тіло (глобальна середня температура, тиск)<br>
                     <b style="color:#f0f;">СОЦІУМ</b> — психіка (новини, ринки, соціальна активність)<br><br>
                     Оновлення: Космос 1хв, Земля 5хв, Соціум 10хв
                 </div>
@@ -583,7 +615,7 @@
 
         async function init() {
             mockHistory();
-            updateParticles(); // Initialize particles based on initial metrics
+            createSpherePoints(); // Initialize new animation points
             setInterval(tickClock, 1000);
             setInterval(fetchSpaceData, 60000); // 1 min
             setInterval(fetchEarthData, 300000); // 5 min
@@ -592,8 +624,7 @@
 
             await Promise.all([fetchSpaceData(), fetchEarthData(), fetchHumanData()]);
             calculateIBONARIUM();
-            updateParticles(); // Update after first data fetch
-            log("IBONARIUM STATE VECTOR ONLINE");
+            log("IBONARIUM GLOBAL MONITOR ONLINE");
         }
 
         function mockHistory() {
@@ -662,40 +693,71 @@
             }
         }
 
+        // GLOBAL EARTH FETCH
         async function fetchEarthData() {
             document.getElementById('earth-status').innerText = 'FETCH...';
             try {
-                // Using Kyiv as reference point
-                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.52&current=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,uv_index&timezone=auto');
-                const data = await res.json();
+                // Fetching 4 strategic points: London (EU), NYC (NA), Tokyo (ASIA), Sydney (AU)
+                // to create a "planetary average"
+                const locations = [
+                    { lat: 51.5, lon: -0.1 },  // London
+                    { lat: 40.7, lon: -74.0 }, // NYC
+                    { lat: 35.6, lon: 139.7 }, // Tokyo
+                    { lat: -33.8, lon: 151.2 } // Sydney
+                ];
 
-                STATE.earth.temp = data.current.temperature_2m || 15;
-                STATE.earth.hum = data.current.relative_humidity_2m || 60;
-                STATE.earth.press = data.current.surface_pressure || 1013;
-                STATE.earth.wind = data.current.wind_speed_10m || 3;
-                STATE.earth.uv = data.current.uv_index || 2;
-                STATE.earth.aqi = 50; // Mock AQI (need separate API)
+                const promises = locations.map(loc => 
+                    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,surface_pressure,relative_humidity_2m,wind_speed_10m,uv_index`)
+                        .then(r => r.json())
+                );
 
-                // Calculate EARTH score
-                const temp_dev = Math.abs(STATE.earth.temp - 15) / 30; // deviation from 15°C
-                const press_dev = Math.abs(STATE.earth.press - 1013) / 50;
-                const aqi_norm = STATE.earth.aqi / 200;
-                const uv_norm = STATE.earth.uv / 11;
-                const wind_norm = STATE.earth.wind / 20;
+                const results = await Promise.all(promises);
+                
+                // Aggregate
+                let t_temp = 0, t_press = 0, t_hum = 0, t_wind = 0, t_uv = 0;
+                let validCount = 0;
+
+                results.forEach(data => {
+                    if (data && data.current) {
+                        t_temp += data.current.temperature_2m;
+                        t_press += data.current.surface_pressure;
+                        t_hum += data.current.relative_humidity_2m;
+                        t_wind += data.current.wind_speed_10m;
+                        t_uv += data.current.uv_index;
+                        validCount++;
+                    }
+                });
+
+                if (validCount > 0) {
+                    STATE.earth.temp = t_temp / validCount;
+                    STATE.earth.press = t_press / validCount;
+                    STATE.earth.hum = t_hum / validCount;
+                    STATE.earth.wind = t_wind / validCount;
+                    STATE.earth.uv = t_uv / validCount; // Average UV might be low due to night in some places
+                    STATE.earth.aqi = 50; // Still mock
+                }
+
+                // Calculate EARTH score (Global)
+                // Global average temp baseline roughly 14-16°C
+                const temp_dev = Math.abs(STATE.earth.temp - 15) / 20; 
+                const press_dev = Math.abs(STATE.earth.press - 1013) / 40;
+                const uv_norm = STATE.earth.uv / 10;
+                const wind_norm = STATE.earth.wind / 25; // Higher tolerance for global avg
 
                 STATE.earth.score = (
                     0.30 * temp_dev +
                     0.20 * press_dev +
-                    0.20 * aqi_norm +
+                    0.20 * 0.2 + // Static AQI weight
                     0.15 * uv_norm +
                     0.15 * wind_norm
                 ) * 100;
 
                 updateEarthUI();
-                log(`✓ EARTH: T=${STATE.earth.temp.toFixed(1)}°C, P=${STATE.earth.press.toFixed(0)}hPa`);
+                log(`✓ EARTH (GLOBAL): Avg T=${STATE.earth.temp.toFixed(1)}°C, P=${STATE.earth.press.toFixed(0)}hPa`);
                 document.getElementById('earth-status').innerText = 'ОНЛАЙН';
             } catch (e) {
-                log('⚠ EARTH LAYER OFFLINE');
+                console.error(e);
+                log('⚠ EARTH LAYER OFFLINE (Global Fetch Failed)');
                 document.getElementById('earth-status').innerText = 'OFFLINE';
             }
         }
@@ -707,30 +769,30 @@
                 const newsRes = await fetch('https://api.rss2json.com/v1/api.json?rss_url=http://feeds.bbci.co.uk/news/world/rss.xml');
                 const newsData = await newsRes.json();
 
-                let fearWords = ['war', 'dead', 'kill', 'crisis', 'crash', 'attack', 'threat', 'death', 'conflict'];
-                let hopeWords = ['peace', 'win', 'new', 'safe', 'good', 'growth', 'deal', 'help'];
+                let fearWords = ['war', 'dead', 'kill', 'crisis', 'crash', 'attack', 'threat', 'death', 'conflict', 'bomb', 'strike'];
+                let hopeWords = ['peace', 'win', 'new', 'safe', 'good', 'growth', 'deal', 'help', 'cure', 'solution'];
                 let fearCount = 0, hopeCount = 0;
 
-                newsData.items.slice(0, 10).forEach(item => {
+                newsData.items.slice(0, 15).forEach(item => {
                     const txt = (item.title + " " + item.description).toLowerCase();
                     fearWords.forEach(w => { if (txt.includes(w)) fearCount++; });
                     hopeWords.forEach(w => { if (txt.includes(w)) hopeCount++; });
                 });
 
-                STATE.human.sentiment = clamp(50 - (fearCount * 5) + (hopeCount * 3), 0, 100);
+                STATE.human.sentiment = clamp(50 - (fearCount * 4) + (hopeCount * 3), 10, 90);
 
-                // Market Volatility (Bitcoin as proxy)
+                // Market Volatility (Bitcoin - Global Indicator)
                 const btcRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
                 const btcData = await btcRes.json();
                 STATE.human.market = Math.abs(btcData.bitcoin.usd_24h_change || 2);
 
-                // Social Entropy (simulated from news count)
+                // Social Entropy
                 STATE.human.social = clamp(newsData.items.length * 2, 0, 100);
                 STATE.human.conflict = fearCount * 5;
 
                 // Calculate HUMAN score
                 const sent_norm = (100 - STATE.human.sentiment) / 100; // inverted
-                const market_norm = Math.min(STATE.human.market / 20, 1);
+                const market_norm = Math.min(STATE.human.market / 15, 1);
                 const social_norm = STATE.human.social / 100;
 
                 STATE.human.score = (
@@ -740,7 +802,7 @@
                 ) * 100;
 
                 updateHumanUI();
-                log(`✓ HUMAN: Sentiment=${STATE.human.sentiment.toFixed(0)}, Market=${STATE.human.market.toFixed(1)}%`);
+                log(`✓ HUMAN: Sen=${STATE.human.sentiment.toFixed(0)}, Mkt=${STATE.human.market.toFixed(1)}%`);
                 document.getElementById('human-status').innerText = 'ОНЛАЙН';
             } catch (e) {
                 log('⚠ HUMAN LAYER OFFLINE');
@@ -759,11 +821,154 @@
             if (STATE.history.length > MAX_HISTORY) STATE.history.shift();
 
             updateMainUI();
-            updateParticles(); // Update visualization based on new metrics
         }
 
         // ============================================================================
-        // UI UPDATES
+        // VISUALIZATION - NEW SPHERE ANIMATION
+        // ============================================================================
+
+        let rotationAngle = 0;
+        let points = [];
+        
+        function createSpherePoints() {
+            points = [];
+            const count = 300;
+            for(let i=0; i<count; i++) {
+                // Fibonacci sphere algorithm
+                const y = 1 - (i / (count - 1)) * 2;
+                const radiusAtY = Math.sqrt(1 - y * y);
+                const theta = i * Math.PI * (3 - Math.sqrt(5)); // Golden angle increment
+                
+                const x = Math.cos(theta) * radiusAtY;
+                const z = Math.sin(theta) * radiusAtY;
+                
+                points.push({
+                    x: x * 200, 
+                    y: y * 200, 
+                    z: z * 200,
+                    xo: x * 200, yo: y * 200, zo: z * 200, // originals
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function animLoop() {
+            const w = canvas.clientWidth;
+            const h = canvas.clientHeight;
+            if (canvas.width !== w) { canvas.width = w; canvas.height = h; }
+
+            ctx.clearRect(0, 0, w, h);
+            
+            const cx = w / 2;
+            const cy = h / 2;
+            
+            rotationAngle += 0.002 + (STATE.space.sw_speed / 500000); // Solar wind affects rotation
+
+            // Pulse based on Ibonarium score
+            const pulse = 1 + Math.sin(Date.now() / 1000) * (STATE.ibonarium / 500); 
+
+            ctx.fillStyle = '#fff';
+            
+            // Draw Connections (based on Human Connectivity/Entropy)
+            const connectivity = STATE.human.social / 100;
+            
+            points.forEach(p => {
+                // Rotate
+                const x1 = p.x * Math.cos(rotationAngle) - p.z * Math.sin(rotationAngle);
+                const z1 = p.x * Math.sin(rotationAngle) + p.z * Math.cos(rotationAngle);
+                
+                // Tilt
+                const y2 = p.y * Math.cos(0.3) - z1 * Math.sin(0.3);
+                const z2 = p.y * Math.sin(0.3) + z1 * Math.cos(0.3);
+                
+                // Project
+                const scale = 500 / (500 + z2);
+                const x3 = x1 * scale * pulse;
+                const y3 = y2 * scale * pulse;
+                
+                p.sx = cx + x3;
+                p.sy = cy + y3;
+                p.scale = scale;
+                p.z2 = z2;
+            });
+
+            // Sort for depth buffer
+            points.sort((a,b) => b.z2 - a.z2);
+
+            points.forEach((p, i) => {
+                const alpha = Math.max(0.1, p.scale * 0.8);
+                const sz = Math.max(0.5, 2 * p.scale);
+                
+                // Color based on layer dominance - simplistic mix
+                // Mostly white/blue, but tint red if score bad
+                let r=200, g=200, b=255;
+                if (STATE.ibonarium < 40) { r=255; g=50; b=50; } // Critical
+                
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.sx, p.sy, sz, 0, Math.PI*2);
+                ctx.fill();
+
+                // Draw lines to neighbors
+                if (connectivity > 0.3) {
+                   // Connect to a few nearby in array (approximation of spatial nearness in fib sphere)
+                   const neighborCount = Math.floor(connectivity * 3);
+                   ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.15})`;
+                   ctx.lineWidth = 1 * p.scale;
+                   
+                   for(let j=1; j<=neighborCount; j++) {
+                       const n = points[(i+j) % points.length];
+                       // Simple distance check to avoid cross-sphere lines
+                       const dx = p.sx - n.sx;
+                       const dy = p.sy - n.sy;
+                       if (dx*dx+dy*dy < 2500 * p.scale) {
+                           ctx.beginPath();
+                           ctx.moveTo(p.sx, p.sy);
+                           ctx.lineTo(n.sx, n.sy);
+                           ctx.stroke();
+                       }
+                   }
+                }
+            });
+
+            // Draw Central Core
+            const coreSize = 30 * pulse;
+            const coreGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreSize * 3);
+            coreGlow.addColorStop(0, 'rgba(0, 255, 255, 0.4)');
+            coreGlow.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = coreGlow;
+            ctx.fillRect(0,0,w,h);
+
+            // History Graph Overlay
+            drawHistory();
+
+            requestAnimationFrame(animLoop);
+        }
+
+        function drawHistory() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const graphH = 100;
+            const graphY = h - 120; // Above HUD
+
+            if (STATE.history.length < 2) return;
+
+            ctx.strokeStyle = 'rgba(120, 0, 255, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            STATE.history.forEach((pt, i) => {
+                const x = (i / (MAX_HISTORY)) * w * 0.6 + (w * 0.2); // Centered graph
+                const y = graphY + graphH - (pt.val / 100) * graphH;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            });
+
+            ctx.stroke();
+        }
+
+
+        // ============================================================================
+        // UI & ALERTS
         // ============================================================================
 
         function updateSpaceUI() {
@@ -774,17 +979,33 @@
             document.getElementById('v-bt').innerText = STATE.space.bt.toFixed(2);
             document.getElementById('space-score').innerText = STATE.space.score.toFixed(0);
             document.getElementById('space-score').style.color = getScoreColor(STATE.space.score);
+
+            let desc = '';
+            if (STATE.space.kp > 5) desc = `⚠️ МАГНІТНА БУРЯ (Kp=${STATE.space.kp}). `;
+            else desc = `Нормальний геомагнітний фон (Kp=${STATE.space.kp}). `;
+            
+            if (STATE.space.sw_speed > 600) desc += `Високий сонячний вітер (${STATE.space.sw_speed.toFixed(0)}km/s).`;
+            
+            document.getElementById('space-desc').innerText = desc;
         }
 
         function updateEarthUI() {
             document.getElementById('v-temp').innerText = STATE.earth.temp.toFixed(1);
             document.getElementById('v-press').innerText = STATE.earth.press.toFixed(0);
-            document.getElementById('v-hum').innerText = STATE.earth.hum.toFixed(0);
+            document.getElementById('v-hum').innerText = STATE.earth.hum.toFixed(0); // Actually Humidity but used as general activity proxy
             document.getElementById('v-wind').innerText = STATE.earth.wind.toFixed(1);
             document.getElementById('v-uv').innerText = STATE.earth.uv.toFixed(1);
             document.getElementById('v-aqi').innerText = STATE.earth.aqi.toFixed(0);
             document.getElementById('earth-score').innerText = STATE.earth.score.toFixed(0);
             document.getElementById('earth-score').style.color = getScoreColor(STATE.earth.score);
+
+            // Detailed description based on global averages
+            let desc = `Глобальний моніторинг (4 точки). Середня T=${STATE.earth.temp.toFixed(1)}°C. `;
+            if (Math.abs(STATE.earth.press - 1013) > 10) desc += "Значні баричні аномалії. ";
+            if (STATE.earth.wind > 10) desc += "Підвищена турбулентність атмосфери. ";
+            else desc += "Атмосфера стабільна.";
+
+            document.getElementById('earth-desc').innerText = desc;
         }
 
         function updateHumanUI() {
@@ -794,6 +1015,13 @@
             document.getElementById('v-conflict').innerText = STATE.human.conflict.toFixed(0);
             document.getElementById('human-score').innerText = STATE.human.score.toFixed(0);
             document.getElementById('human-score').style.color = getScoreColor(STATE.human.score);
+
+            let desc = `Соціальний настрій: ${STATE.human.sentiment}/100. `;
+            if (STATE.human.sentiment < 40) desc += "Домінування негативу. ";
+            if (STATE.human.market > 5) desc += "Ринкова волатильність.";
+            else desc += "Ситуація стабільна.";
+            
+            document.getElementById('human-desc').innerText = desc;
         }
 
         function updateMainUI() {
@@ -802,23 +1030,36 @@
             document.getElementById('main-idx').style.color = getScoreColor(idx);
 
             let mood = "";
-            if (idx < 30) mood = "КРИТИЧНИЙ СТАН";
-            else if (idx < 50) mood = "НАПРУЖЕННЯ";
-            else if (idx < 70) mood = "СТАБІЛЬНІСТЬ";
-            else mood = "ГАРМОНІЯ";
+            let fullDesc = "";
 
-            document.getElementById('main-desc').innerHTML = `<span style="color:#fff; font-weight:bold">${mood}</span> // Інтегральний індекс планетарної події`;
+            if (idx < 30) {
+                mood = "CRITICAL";
+                fullDesc = "СИСТЕМНИЙ ДИСБАЛАНС";
+            } else if (idx < 50) {
+                mood = "WARNING";
+                fullDesc = "НАПРУЖЕННЯ СИСТЕМИ";
+            } else if (idx < 70) {
+                mood = "STABLE";
+                fullDesc = "НОРМАЛЬНИЙ РЕЖИМ";
+            } else {
+                mood = "OPTIMAL";
+                fullDesc = "ГАРМОНІЯ ВЕКТОРІВ";
+            }
+
+            document.getElementById('main-desc').innerHTML = `<span style="color:#fff; font-weight:bold">${mood}</span> // ${fullDesc}`;
 
             // Analytics
             const vals = STATE.history.map(h => h.val);
             const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
             const dev = Math.sqrt(vals.map(v => Math.pow(v - avg, 2)).reduce((a, b) => a + b, 0) / vals.length);
-            const trend = vals[vals.length - 1] > vals[vals.length - 10] ? '↗ ЗРОСТАННЯ' : '↘ СПАД';
+            const trend = vals[vals.length - 1] > vals[vals.length - 10] ? '↗ UP' : '↘ DOWN';
 
             document.getElementById('m-avg').innerText = avg.toFixed(1);
             document.getElementById('m-dev').innerText = dev.toFixed(1);
             document.getElementById('m-trend').innerText = trend;
             document.getElementById('m-peak').innerText = new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+
+            checkAlerts();
         }
 
         function getScoreColor(score) {
@@ -826,276 +1067,6 @@
             if (score < 50) return '#fa0';
             if (score < 70) return '#ff0';
             return '#0fa';
-        }
-
-        // ============================================================================
-        // DATA-DRIVEN VISUALIZATION - REACTIVE TO METRICS
-        // ============================================================================
-
-        let rotationAngle = 0;
-        let particles = [];
-        let lastMetricsUpdate = 0;
-
-        // Initialize particles based on current metrics
-        function updateParticles() {
-            // Particle count based on Kp index (0-9 -> 50-300 particles)
-            const targetCount = Math.floor(50 + STATE.space.kp * 25);
-
-            // Add particles if needed
-            while (particles.length < targetCount) {
-                particles.push(createParticle());
-            }
-
-            // Remove particles if needed
-            while (particles.length > targetCount) {
-                particles.pop();
-            }
-
-            // Update particle properties based on metrics
-            particles.forEach(p => {
-                // Speed based on solar wind (300-1000 km/s -> 0.005-0.03)
-                p.baseSpeed = 0.005 + (STATE.space.sw_speed / 1000) * 0.025;
-
-                // Color based on temperature (-20 to +40 -> blue to red)
-                const tempNorm = (STATE.earth.temp + 20) / 60;
-                p.color = tempToColor(tempNorm);
-
-                // Size based on pressure deviation
-                const pressDeviation = Math.abs(STATE.earth.press - 1013) / 50;
-                p.sizeMultiplier = 1 + pressDeviation * 0.5;
-            });
-        }
-
-        function createParticle() {
-            return {
-                angle: Math.random() * Math.PI * 2,
-                radius: Math.random() * 250 + 30,
-                z: Math.random() * 500 - 250,
-                baseSpeed: 0.01,
-                speed: 0.01,
-                size: Math.random() * 2 + 1,
-                sizeMultiplier: 1,
-                color: 'rgba(136, 0, 255, 0.6)',
-                turbulence: 0
-            };
-        }
-
-        function tempToColor(norm) {
-            const r = Math.floor(norm * 255);
-            const b = Math.floor((1 - norm) * 255);
-            const g = 100;
-            return `rgba(${r}, ${g}, ${b}, 0.6)`;
-        }
-
-        function animLoop() {
-            rotationAngle += 0.003;
-
-            // Update particles every minute based on new metrics
-            const now = Date.now();
-            if (now - lastMetricsUpdate > 60000) {
-                updateParticles();
-                lastMetricsUpdate = now;
-            }
-
-            drawVisualization();
-            requestAnimationFrame(animLoop);
-        }
-
-        function drawVisualization() {
-            const w = canvas.clientWidth;
-            const h = canvas.clientHeight;
-            if (canvas.width !== w) { canvas.width = w; canvas.height = h; }
-
-            ctx.clearRect(0, 0, w, h);
-
-            const cx = w / 2;
-            const cy = h / 2;
-            const maxR = Math.min(w, h) * 0.35;
-
-            // 3D projection helper
-            function project3D(x, y, z) {
-                const fov = 500;
-                const scale = fov / (fov + z);
-                return {
-                    x: cx + x * scale,
-                    y: cy + y * scale,
-                    scale: scale
-                };
-            }
-
-            // Wind turbulence effect
-            const windTurbulence = STATE.earth.wind / 20;
-
-            // Draw particles with metric-based behavior
-            particles.forEach(p => {
-                // Update angle with base speed + turbulence
-                p.angle += p.baseSpeed + Math.sin(rotationAngle * 5) * windTurbulence * 0.01;
-
-                // Radius oscillation based on sentiment (nervous system)
-                const sentimentWave = Math.sin(rotationAngle * 3 + p.angle) * (100 - STATE.human.sentiment) / 100 * 20;
-                const currentRadius = p.radius + sentimentWave;
-
-                const x = Math.cos(p.angle + rotationAngle) * currentRadius;
-                const y = Math.sin(p.angle + rotationAngle) * currentRadius;
-
-                // Z-axis movement based on Bz (magnetic field)
-                p.z += Math.sin(rotationAngle * 2) * Math.abs(STATE.space.bz) * 0.5;
-                if (p.z > 250) p.z = -250;
-                if (p.z < -250) p.z = 250;
-
-                const proj = project3D(x, y, p.z);
-
-                ctx.fillStyle = p.color;
-                ctx.globalAlpha = proj.scale * 0.7;
-                ctx.beginPath();
-                ctx.arc(proj.x, proj.y, p.size * p.sizeMultiplier * proj.scale, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            ctx.globalAlpha = 1;
-
-            // Draw data-driven layers
-            const layers = [
-                {
-                    radius: maxR * 1.0,
-                    score: STATE.space.score,
-                    color: '#f80',
-                    label: 'SPACE',
-                    z: 0,
-                    metric: STATE.space.kp,
-                    maxMetric: 9
-                },
-                {
-                    radius: maxR * 0.7,
-                    score: STATE.earth.score,
-                    color: '#0af',
-                    label: 'EARTH',
-                    z: -50,
-                    metric: Math.abs(STATE.earth.press - 1013),
-                    maxMetric: 50
-                },
-                {
-                    radius: maxR * 0.4,
-                    score: STATE.human.score,
-                    color: '#f0f',
-                    label: 'HUMAN',
-                    z: -100,
-                    metric: STATE.human.market,
-                    maxMetric: 20
-                }
-            ];
-
-            layers.forEach(layer => {
-                const segments = 64;
-
-                // Pulsation based on metric intensity
-                const pulse = Math.sin(rotationAngle * 4) * (layer.metric / layer.maxMetric) * 10;
-                const activeRadius = layer.radius + pulse;
-
-                for (let i = 0; i < segments; i++) {
-                    const angle1 = (i / segments) * Math.PI * 2 + rotationAngle;
-                    const angle2 = ((i + 1) / segments) * Math.PI * 2 + rotationAngle;
-
-                    // Deformation based on score (lower score = more distortion)
-                    const distortion1 = Math.sin(angle1 * 3) * (100 - layer.score) / 100 * 15;
-                    const distortion2 = Math.sin(angle2 * 3) * (100 - layer.score) / 100 * 15;
-
-                    const x1 = Math.cos(angle1) * (activeRadius + distortion1);
-                    const y1 = Math.sin(angle1) * (activeRadius + distortion1);
-                    const x2 = Math.cos(angle2) * (activeRadius + distortion2);
-                    const y2 = Math.sin(angle2) * (activeRadius + distortion2);
-
-                    const p1 = project3D(x1, y1, layer.z);
-                    const p2 = project3D(x2, y2, layer.z);
-
-                    const progress = i / segments;
-                    const alpha = progress < (layer.score / 100) ? 0.9 : 0.15;
-
-                    // Intensity flicker based on metric
-                    const flicker = 1 + Math.sin(rotationAngle * 10 + i) * (layer.metric / layer.maxMetric) * 0.2;
-
-                    ctx.strokeStyle = layer.color + Math.floor(alpha * flicker * 255).toString(16).padStart(2, '0');
-                    ctx.lineWidth = 3 * p1.scale;
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.stroke();
-                }
-
-                // Layer label with glow based on activity
-                const labelAngle = rotationAngle;
-                const lx = Math.cos(labelAngle) * (layer.radius + 25);
-                const ly = Math.sin(labelAngle) * (layer.radius + 25);
-                const lp = project3D(lx, ly, layer.z);
-
-                const glowIntensity = 10 + (layer.metric / layer.maxMetric) * 20;
-                ctx.shadowBlur = glowIntensity;
-                ctx.shadowColor = layer.color;
-                ctx.fillStyle = '#fff';
-                ctx.font = (10 * lp.scale) + 'px Space Mono';
-                ctx.textAlign = 'center';
-                ctx.fillText(layer.label, lp.x, lp.y);
-                ctx.shadowBlur = 0;
-            });
-
-            // Connection lines between layers based on correlation
-            if (STATE.space.score > 0 && STATE.earth.score > 0) {
-                const correlation = Math.abs(STATE.space.score - STATE.earth.score) / 100;
-                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * (1 - correlation)})`;
-                ctx.lineWidth = 1;
-                ctx.setLineDash([5, 5]);
-
-                for (let i = 0; i < 8; i++) {
-                    const angle = (i / 8) * Math.PI * 2 + rotationAngle;
-                    const x1 = Math.cos(angle) * maxR * 1.0;
-                    const y1 = Math.sin(angle) * maxR * 1.0;
-                    const x2 = Math.cos(angle) * maxR * 0.7;
-                    const y2 = Math.sin(angle) * maxR * 0.7;
-
-                    const p1 = project3D(x1, y1, 0);
-                    const p2 = project3D(x2, y2, -50);
-
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.stroke();
-                }
-                ctx.setLineDash([]);
-            }
-
-            // History graph at bottom
-            drawHistory();
-        }
-
-        function drawHistory() {
-            const w = canvas.width;
-            const h = canvas.height;
-            const graphH = h * 0.15;
-            const graphY = h - graphH - 20;
-
-            if (STATE.history.length < 2) return;
-
-            ctx.strokeStyle = '#80f';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-
-            STATE.history.forEach((pt, i) => {
-                const x = (i / (STATE.history.length - 1)) * w;
-                const y = graphY + graphH - (pt.val / 100) * graphH;
-                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-            });
-
-            ctx.stroke();
-
-            // Grid
-            ctx.strokeStyle = '#ffffff11';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 4; i++) {
-                const y = graphY + (i / 4) * graphH;
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(w, y);
-                ctx.stroke();
-            }
         }
 
         // ============================================================================
@@ -1113,252 +1084,39 @@
 
             const alert = document.createElement('div');
             alert.className = `alert alert-${type}`;
-            alert.innerHTML = `<b>${type.toUpperCase()}:</b> ${message}`;
+            alert.innerHTML = `[SYSTEM_MSG] >> ${message}`;
             alertContainer.appendChild(alert);
 
             setTimeout(() => {
                 alert.style.opacity = '0';
-                alert.style.transform = 'translateX(100%)';
                 setTimeout(() => {
-                    alertContainer.removeChild(alert);
+                    if (alert.parentNode) alertContainer.removeChild(alert);
                     activeAlerts.delete(alertKey);
-                }, 300);
+                }, 500);
             }, duration);
         }
 
         function checkAlerts() {
-            // SPACE alerts
-            if (STATE.space.kp > 6) {
-                showAlert(`Геомагнітний шторм! Kp=${STATE.space.kp.toFixed(1)} (критичний рівень)`, 'critical');
-            } else if (STATE.space.kp > 4) {
-                showAlert(`Підвищена геомагнітна активність: Kp=${STATE.space.kp.toFixed(1)}`, 'warning');
-            }
-
-            if (STATE.space.sw_speed > 700) {
-                showAlert(`Екстремальний сонячний вітер: ${STATE.space.sw_speed.toFixed(0)} км/с`, 'critical');
-            } else if (STATE.space.sw_speed > 550) {
-                showAlert(`Високошвидкісний потік: ${STATE.space.sw_speed.toFixed(0)} км/с`, 'warning');
-            }
-
-            if (Math.abs(STATE.space.bz) > 15) {
-                showAlert(`Критичне відхилення Bz: ${STATE.space.bz.toFixed(1)} nT`, 'critical');
-            }
-
-            // EARTH alerts
-            if (STATE.earth.wind > 15) {
-                showAlert(`Сильний вітер: ${STATE.earth.wind.toFixed(1)} м/с`, 'warning');
-            }
-
-            if (STATE.earth.press < 980 || STATE.earth.press > 1040) {
-                showAlert(`Аномальний тиск: ${STATE.earth.press.toFixed(0)} hPa`, 'warning');
-            }
-
-            // HUMAN alerts
-            if (STATE.human.sentiment < 30) {
-                showAlert(`Критично низький соціальний настрій: ${STATE.human.sentiment.toFixed(0)}`, 'critical');
-            } else if (STATE.human.sentiment < 40) {
-                showAlert(`Негативний соціальний фон: ${STATE.human.sentiment.toFixed(0)}`, 'warning');
-            }
-
-            if (STATE.human.market > 10) {
-                showAlert(`Висока ринкова волатильність: ${STATE.human.market.toFixed(1)}%`, 'warning');
-            }
-
-            // IBONARIUM alerts
-            if (STATE.ibonarium < 30) {
-                showAlert(`КРИТИЧНИЙ ПЛАНЕТАРНИЙ СТАН: IBONARIUM=${STATE.ibonarium.toFixed(1)}`, 'critical');
-            } else if (STATE.ibonarium < 45) {
-                showAlert(`Планетарне напруження: IBONARIUM=${STATE.ibonarium.toFixed(1)}`, 'warning');
-            }
+            // SPACE
+            if (STATE.space.kp > 5) showAlert(`MAGNETIC STORM DETECTED (Kp=${STATE.space.kp})`, 'critical');
+            
+            // EARTH (Global)
+            if (Math.abs(STATE.earth.temp - 15) > 10) showAlert(`GLOBAL TEMP ANOMALY`, 'warning');
+            
+            // HUMAN
+            if (STATE.human.sentiment < 30) showAlert(`SOCIAL SENTIMENT CRITICAL`, 'critical');
+            if (STATE.human.market > 8) showAlert(`MARKET VOLATILITY SPIKE`, 'warning');
+            
+            // SYSTEM
+            if (STATE.ibonarium < 35) showAlert(`IBONARIUM INDEX LOW`, 'critical');
         }
 
-        // ============================================================================
-        // ENHANCED UI UPDATES WITH DESCRIPTIONS
-        // ============================================================================
-
-        function updateSpaceUI() {
-            document.getElementById('v-kp').innerText = STATE.space.kp.toFixed(2);
-            document.getElementById('v-sw-speed').innerText = STATE.space.sw_speed.toFixed(0);
-            document.getElementById('v-sw-dens').innerText = STATE.space.sw_dens.toFixed(1);
-            document.getElementById('v-bz').innerText = STATE.space.bz.toFixed(2);
-            document.getElementById('v-bt').innerText = STATE.space.bt.toFixed(2);
-            document.getElementById('space-score').innerText = STATE.space.score.toFixed(0);
-            document.getElementById('space-score').style.color = getScoreColor(STATE.space.score);
-
-            // Detailed description
-            let desc = '';
-            if (STATE.space.kp > 6) {
-                desc = `🔴 ГЕОМАГНІТНИЙ ШТОРМ G${Math.floor(STATE.space.kp - 4)}: Сильне збурення магнітосфери Землі. КРИТИЧНІ РИЗИКИ: порушення GPS-навігації (відхилення до 50м), збої в радіозв'язку на високих широтах, можливі перебої в електромережах, підвищена радіація для авіарейсів на полярних маршрутах. Рекомендується відкласти критичні супутникові операції.`;
-            } else if (STATE.space.kp > 4) {
-                desc = `🟡 АКТИВНА ФАЗА: Підвищена геомагнітна активність (Kp=${STATE.space.kp.toFixed(1)}). ОЧІКУЄТЬСЯ: посилення полярних сяйв до широти 50-55°, мінорні збої в супутниковій навігації (точність ±10-20м), можливі флуктуації в роботі HF-радіозв'язку. Космічна погода нестабільна.`;
-            } else if (STATE.space.kp > 2) {
-                desc = `🟢 ПОМІРНА АКТИВНІСТЬ: Нормальні коливання геомагнітного поля (Kp=${STATE.space.kp.toFixed(1)}). Космічна погода в межах норми. Полярні сяйва можливі на широтах >60°. Всі системи працюють штатно.`;
-            } else {
-                desc = `⚪ СПОКІЙ: Мінімальна геомагнітна активність (Kp=${STATE.space.kp.toFixed(1)}). Ідеальні умови для космічних операцій, супутникового зв'язку та навігації. Магнітосфера стабільна.`;
-            }
-
-            if (STATE.space.sw_speed > 700) {
-                desc += ` ⚠️ ЕКСТРЕМАЛЬНИЙ СОНЯЧНИЙ ВІТЕР: ${STATE.space.sw_speed.toFixed(0)} км/с (норма 300-400). Високоенергетичний потік плазми стискає магнітосферу. Очікується посилення геомагнітної активності протягом 6-12 годин.`;
-            } else if (STATE.space.sw_speed > 550) {
-                desc += ` Швидкість сонячного вітру ${STATE.space.sw_speed.toFixed(0)} км/с - підвищений потік. Можливе посилення магнітосферних збурень.`;
-            }
-
-            if (Math.abs(STATE.space.bz) > 10) {
-                const direction = STATE.space.bz < 0 ? 'південна (НЕБЕЗПЕЧНА)' : 'північна (стабілізуюча)';
-                desc += ` Bz компонента IMF: ${STATE.space.bz.toFixed(1)} nT (${direction}). ${STATE.space.bz < 0 ? 'Південна орієнтація сприяє магнітним бурям!' : ''}`;
-            }
-
-            document.getElementById('space-desc').innerText = desc;
-        }
-
-        function updateEarthUI() {
-            document.getElementById('v-temp').innerText = STATE.earth.temp.toFixed(1);
-            document.getElementById('v-press').innerText = STATE.earth.press.toFixed(0);
-            document.getElementById('v-hum').innerText = STATE.earth.hum.toFixed(0);
-            document.getElementById('v-wind').innerText = STATE.earth.wind.toFixed(1);
-            document.getElementById('v-uv').innerText = STATE.earth.uv.toFixed(1);
-            document.getElementById('v-aqi').innerText = STATE.earth.aqi.toFixed(0);
-            document.getElementById('earth-score').innerText = STATE.earth.score.toFixed(0);
-            document.getElementById('earth-score').style.color = getScoreColor(STATE.earth.score);
-
-            // Detailed description
-            let desc = `📍 КИЇВ: Температура ${STATE.earth.temp.toFixed(1)}°C `;
-
-            // Temperature analysis
-            if (STATE.earth.temp < -15) {
-                desc += `(ЕКСТРЕМАЛЬНИЙ ХОЛОД - ризик переохолодження), `;
-            } else if (STATE.earth.temp < 0) {
-                desc += `(холодно - обережно з ожеледицею), `;
-            } else if (STATE.earth.temp > 30) {
-                desc += `(СПЕКА - ризик теплового удару), `;
-            } else if (STATE.earth.temp > 25) {
-                desc += `(тепло), `;
-            } else {
-                desc += `(комфортна), `;
-            }
-
-            // Pressure analysis
-            if (STATE.earth.press < 980) {
-                desc += `НИЗЬКИЙ ТИСК ${STATE.earth.press.toFixed(0)} hPa (глибокий циклон). ОЧІКУЄТЬСЯ: інтенсивні опади, посилення вітру. `;
-            } else if (STATE.earth.press < 1000) {
-                desc += `знижений тиск ${STATE.earth.press.toFixed(0)} hPa (циклон, можливі опади). `;
-            } else if (STATE.earth.press > 1030) {
-                desc += `ВИСОКИЙ ТИСК ${STATE.earth.press.toFixed(0)} hPa (антициклон, ясно). `;
-            } else if (STATE.earth.press > 1020) {
-                desc += `підвищений тиск ${STATE.earth.press.toFixed(0)} hPa (антициклон). `;
-            } else {
-                desc += `нормальний тиск ${STATE.earth.press.toFixed(0)} hPa. `;
-            }
-
-            // Wind analysis
-            if (STATE.earth.wind > 20) {
-                desc += `⚠️ ШТОРМОВИЙ ВІТЕР ${STATE.earth.wind.toFixed(1)} м/с! НЕБЕЗПЕЧНО.`;
-            } else if (STATE.earth.wind > 15) {
-                desc += `⚠️ СИЛЬНИЙ ВІТЕР ${STATE.earth.wind.toFixed(1)} м/с.`;
-            } else if (STATE.earth.wind > 12) {
-                desc += `⚠️ Сильний вітер ${STATE.earth.wind.toFixed(1)} м/с.`;
-            } else if (STATE.earth.wind > 7) {
-                desc += `Помірний вітер ${STATE.earth.wind.toFixed(1)} м/с.`;
-            } else {
-                desc += `Слабкий вітер ${STATE.earth.wind.toFixed(1)} м/с.`;
-            }
-
-            document.getElementById('earth-desc').innerText = desc;
-        }
-
-        function updateHumanUI() {
-            document.getElementById('v-sentiment').innerText = STATE.human.sentiment.toFixed(0);
-            document.getElementById('v-market').innerText = STATE.human.market.toFixed(1) + '%';
-            document.getElementById('v-social').innerText = STATE.human.social.toFixed(0);
-            document.getElementById('v-conflict').innerText = STATE.human.conflict.toFixed(0);
-            document.getElementById('human-score').innerText = STATE.human.score.toFixed(0);
-            document.getElementById('human-score').style.color = getScoreColor(STATE.human.score);
-
-            // Detailed description
-            let desc = '';
-            if (STATE.human.sentiment < 30) {
-                desc = `🔴 КРИТИЧНИЙ НЕГАТИВ (${STATE.human.sentiment.toFixed(0)}/100): Домінують тривожні новини - війна, смерть, кризи, катастрофи. КОЛЕКТИВНА ПСИХІКА ПІД ТИСКОМ. Інформаційний простір насичений страхом та конфліктами. Рекомендується обмежити споживання новин для ментального здоров'я.`;
-            } else if (STATE.human.sentiment < 45) {
-                desc = `🟡 ПЕСИМІСТИЧНИЙ ФОН (${STATE.human.sentiment.toFixed(0)}/100): Переважають негативні події в світових ЗМІ. Соціальна напруга зростає. Фіксується підвищена тривожність у суспільстві. Потрібна критична оцінка інформації.`;
-            } else if (STATE.human.sentiment < 60) {
-                desc = `🟢 НЕЙТРАЛЬНИЙ БАЛАНС (${STATE.human.sentiment.toFixed(0)}/100): Змішаний інформаційний потік - як позитивні, так і негативні події. Стабільний соціальний стан без критичних відхилень.`;
-            } else {
-                desc = `⚪ ОПТИМІСТИЧНИЙ НАСТРІЙ (${STATE.human.sentiment.toFixed(0)}/100): Позитивні новини переважають - мир, допомога, прогрес, досягнення. Конструктивний соціальний клімат сприяє розвитку.`;
-            }
-
-            // Market analysis
-            if (STATE.human.market > 15) {
-                desc += ` ⚠️ ЕКСТРЕМАЛЬНА РИНКОВА ВОЛАТИЛЬНІСТЬ: ${STATE.human.market.toFixed(1)}% (Bitcoin 24h). Паніка або ейфорія на крипторинках. Високі ризики.`;
-            } else if (STATE.human.market > 10) {
-                desc += ` ВИСОКА волатильність: ${STATE.human.market.toFixed(1)}% (Bitcoin 24h). Нестабільність фінансових ринків.`;
-            } else if (STATE.human.market > 5) {
-                desc += ` Помірна волатильність: ${STATE.human.market.toFixed(1)}% (Bitcoin 24h). Нормальні ринкові коливання.`;
-            } else {
-                desc += ` Низька волатильність: ${STATE.human.market.toFixed(1)}% (Bitcoin 24h). Ринки стабільні.`;
-            }
-
-            document.getElementById('human-desc').innerText = desc;
-        }
-
-        function updateMainUI() {
-            const idx = STATE.ibonarium;
-            document.getElementById('main-idx').innerText = idx.toFixed(1);
-            document.getElementById('main-idx').style.color = getScoreColor(idx);
-
-            let mood = "";
-            let fullDesc = "";
-
-            if (idx < 30) {
-                mood = "КРИТИЧНИЙ СТАН";
-                fullDesc = "Планетарна система під екстремальним тиском. Високий рівень космічної активності, атмосферних аномалій та соціального стресу. Рекомендується підвищена обережність.";
-            } else if (idx < 50) {
-                mood = "НАПРУЖЕННЯ";
-                fullDesc = "Виявлено значні відхилення в одному або кількох шарах. Планетарна система в стані дисбалансу. Очікується посилення нестабільності.";
-            } else if (idx < 70) {
-                mood = "СТАБІЛЬНІСТЬ";
-                fullDesc = "Планетарні параметри в межах норми. Локальні флуктуації присутні, але загальний стан контрольований. Нормальний режим функціонування.";
-            } else {
-                mood = "ГАРМОНІЯ";
-                fullDesc = "Оптимальна синхронізація всіх шарів. Космос, Земля та Соціум в балансі. Сприятливі умови для всіх видів діяльності.";
-            }
-
-            document.getElementById('main-desc').innerHTML = `<span style="color:#fff; font-weight:bold">${mood}</span> // ${fullDesc}`;
-
-            // Analytics
-            const vals = STATE.history.map(h => h.val);
-            const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-            const dev = Math.sqrt(vals.map(v => Math.pow(v - avg, 2)).reduce((a, b) => a + b, 0) / vals.length);
-            const trend = vals[vals.length - 1] > vals[vals.length - 10] ? '↗ ЗРОСТАННЯ' : '↘ СПАД';
-
-            document.getElementById('m-avg').innerText = avg.toFixed(1);
-            document.getElementById('m-dev').innerText = dev.toFixed(1);
-            document.getElementById('m-trend').innerText = trend;
-            document.getElementById('m-peak').innerText = new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-
-            // Check alerts
-            checkAlerts();
-        }
-
-        function getScoreColor(score) {
-            if (score < 30) return '#f04';
-            if (score < 50) return '#fa0';
-            if (score < 70) return '#ff0';
-            return '#0fa';
-        }
-
-        // ============================================================================
         // UTILS
-        // ============================================================================
-
-        function clamp(v, min, max) {
-            return Math.max(min, Math.min(max, v));
-        }
-
-        function tickClock() {
+        function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+        function tickClock() { 
             const now = new Date();
-            elClock.innerText = now.toLocaleTimeString('uk-UA');
+            elClock.innerText = now.toLocaleTimeString('uk-UA', {timeZone: 'UTC'}); // Changed to UTC as requested "Planetary" often implies UTC
         }
-
         function log(msg) {
             const t = new Date().toLocaleTimeString('uk-UA', { hour12: false });
             const d = document.createElement('div');
@@ -1372,7 +1130,7 @@
         const bgC = document.getElementById('bg-stars');
         const bgCtx = bgC.getContext('2d');
         let stars = [];
-        for (let i = 0; i < 150; i++) {
+        for (let i = 0; i < 200; i++) {
             stars.push({
                 x: Math.random() * innerWidth,
                 y: Math.random() * innerHeight,
@@ -1380,7 +1138,6 @@
                 a: Math.random()
             });
         }
-
         function animStars() {
             bgC.width = innerWidth;
             bgC.height = innerHeight;
@@ -1398,13 +1155,7 @@
         }
         animStars();
 
-        // Auto-recalculate IBONARIUM after any data update
-        setInterval(() => {
-            calculateIBONARIUM();
-        }, 5000);
-
         init();
     </script>
 </body>
-
 </html>
