@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ʼ<!DOCTYPE html>
 <html lang="uk">
 
 <head>
@@ -108,7 +108,8 @@
             border: 1px solid var(--border-subtle);
             background: radial-gradient(circle at center, rgba(20, 10, 30, 0.3), transparent 70%);
             border-radius: 4px;
-            overflow: hidden; /* Ensure canvas doesn't overflow */
+            overflow: hidden;
+            /* Ensure canvas doesn't overflow */
         }
 
         .card {
@@ -117,7 +118,7 @@
             backdrop-filter: blur(10px);
             padding: 12px;
             border-radius: 4px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         .card-h {
@@ -250,7 +251,8 @@
         #alert-container {
             position: fixed;
             top: 100px;
-            right: 40px; /* Aligned with padding */
+            right: 40px;
+            /* Aligned with padding */
             z-index: 1000;
             display: flex;
             flex-direction: column;
@@ -267,16 +269,19 @@
             font-family: var(--font-mono);
             line-height: 1.4;
             animation: glitch-slide 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
             position: relative;
             overflow: hidden;
             pointer-events: auto;
         }
-        
+
         .alert::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
             background: currentColor;
             opacity: 0.5;
             box-shadow: 0 0 10px currentColor;
@@ -285,7 +290,7 @@
         .alert-critical {
             border-color: #f04;
             color: #f04;
-            background: repeating-linear-gradient(45deg, rgba(255,0,0,0.05), rgba(255,0,0,0.05) 10px, rgba(0,0,0,0.9) 10px, rgba(0,0,0,0.9) 20px);
+            background: repeating-linear-gradient(45deg, rgba(255, 0, 0, 0.05), rgba(255, 0, 0, 0.05) 10px, rgba(0, 0, 0, 0.9) 10px, rgba(0, 0, 0, 0.9) 20px);
         }
 
         .alert-warning {
@@ -304,14 +309,17 @@
                 opacity: 0;
                 clip-path: inset(0 100% 0 0);
             }
+
             20% {
                 transform: translateX(-10px);
                 opacity: 1;
                 clip-path: inset(0 0 0 0);
             }
+
             40% {
                 transform: translateX(5px);
             }
+
             100% {
                 transform: translateX(0);
                 opacity: 1;
@@ -362,7 +370,7 @@
             :root {
                 --pad-outer: 15px;
             }
-            
+
             #alert-container {
                 top: 60px;
                 right: 10px;
@@ -706,13 +714,13 @@
                     { lat: -33.8, lon: 151.2 } // Sydney
                 ];
 
-                const promises = locations.map(loc => 
+                const promises = locations.map(loc =>
                     fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,surface_pressure,relative_humidity_2m,wind_speed_10m,uv_index`)
                         .then(r => r.json())
                 );
 
                 const results = await Promise.all(promises);
-                
+
                 // Aggregate
                 let t_temp = 0, t_press = 0, t_hum = 0, t_wind = 0, t_uv = 0;
                 let validCount = 0;
@@ -739,7 +747,7 @@
 
                 // Calculate EARTH score (Global)
                 // Global average temp baseline roughly 14-16°C
-                const temp_dev = Math.abs(STATE.earth.temp - 15) / 20; 
+                const temp_dev = Math.abs(STATE.earth.temp - 15) / 20;
                 const press_dev = Math.abs(STATE.earth.press - 1013) / 40;
                 const uv_norm = STATE.earth.uv / 10;
                 const wind_norm = STATE.earth.wind / 25; // Higher tolerance for global avg
@@ -829,22 +837,22 @@
 
         let rotationAngle = 0;
         let points = [];
-        
+
         function createSpherePoints() {
             points = [];
             const count = 300;
-            for(let i=0; i<count; i++) {
+            for (let i = 0; i < count; i++) {
                 // Fibonacci sphere algorithm
                 const y = 1 - (i / (count - 1)) * 2;
                 const radiusAtY = Math.sqrt(1 - y * y);
                 const theta = i * Math.PI * (3 - Math.sqrt(5)); // Golden angle increment
-                
+
                 const x = Math.cos(theta) * radiusAtY;
                 const z = Math.sin(theta) * radiusAtY;
-                
+
                 points.push({
-                    x: x * 200, 
-                    y: y * 200, 
+                    x: x * 200,
+                    y: y * 200,
                     z: z * 200,
                     xo: x * 200, yo: y * 200, zo: z * 200, // originals
                     phase: Math.random() * Math.PI * 2
@@ -858,34 +866,34 @@
             if (canvas.width !== w) { canvas.width = w; canvas.height = h; }
 
             ctx.clearRect(0, 0, w, h);
-            
+
             const cx = w / 2;
             const cy = h / 2;
-            
+
             rotationAngle += 0.002 + (STATE.space.sw_speed / 500000); // Solar wind affects rotation
 
             // Pulse based on Ibonarium score
-            const pulse = 1 + Math.sin(Date.now() / 1000) * (STATE.ibonarium / 500); 
+            const pulse = 1 + Math.sin(Date.now() / 1000) * (STATE.ibonarium / 500);
 
             ctx.fillStyle = '#fff';
-            
+
             // Draw Connections (based on Human Connectivity/Entropy)
             const connectivity = STATE.human.social / 100;
-            
+
             points.forEach(p => {
                 // Rotate
                 const x1 = p.x * Math.cos(rotationAngle) - p.z * Math.sin(rotationAngle);
                 const z1 = p.x * Math.sin(rotationAngle) + p.z * Math.cos(rotationAngle);
-                
+
                 // Tilt
                 const y2 = p.y * Math.cos(0.3) - z1 * Math.sin(0.3);
                 const z2 = p.y * Math.sin(0.3) + z1 * Math.cos(0.3);
-                
+
                 // Project
                 const scale = 500 / (500 + z2);
                 const x3 = x1 * scale * pulse;
                 const y3 = y2 * scale * pulse;
-                
+
                 p.sx = cx + x3;
                 p.sy = cy + y3;
                 p.scale = scale;
@@ -893,41 +901,41 @@
             });
 
             // Sort for depth buffer
-            points.sort((a,b) => b.z2 - a.z2);
+            points.sort((a, b) => b.z2 - a.z2);
 
             points.forEach((p, i) => {
                 const alpha = Math.max(0.1, p.scale * 0.8);
                 const sz = Math.max(0.5, 2 * p.scale);
-                
+
                 // Color based on layer dominance - simplistic mix
                 // Mostly white/blue, but tint red if score bad
-                let r=200, g=200, b=255;
-                if (STATE.ibonarium < 40) { r=255; g=50; b=50; } // Critical
-                
+                let r = 200, g = 200, b = 255;
+                if (STATE.ibonarium < 40) { r = 255; g = 50; b = 50; } // Critical
+
                 ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
                 ctx.beginPath();
-                ctx.arc(p.sx, p.sy, sz, 0, Math.PI*2);
+                ctx.arc(p.sx, p.sy, sz, 0, Math.PI * 2);
                 ctx.fill();
 
                 // Draw lines to neighbors
                 if (connectivity > 0.3) {
-                   // Connect to a few nearby in array (approximation of spatial nearness in fib sphere)
-                   const neighborCount = Math.floor(connectivity * 3);
-                   ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.15})`;
-                   ctx.lineWidth = 1 * p.scale;
-                   
-                   for(let j=1; j<=neighborCount; j++) {
-                       const n = points[(i+j) % points.length];
-                       // Simple distance check to avoid cross-sphere lines
-                       const dx = p.sx - n.sx;
-                       const dy = p.sy - n.sy;
-                       if (dx*dx+dy*dy < 2500 * p.scale) {
-                           ctx.beginPath();
-                           ctx.moveTo(p.sx, p.sy);
-                           ctx.lineTo(n.sx, n.sy);
-                           ctx.stroke();
-                       }
-                   }
+                    // Connect to a few nearby in array (approximation of spatial nearness in fib sphere)
+                    const neighborCount = Math.floor(connectivity * 3);
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.15})`;
+                    ctx.lineWidth = 1 * p.scale;
+
+                    for (let j = 1; j <= neighborCount; j++) {
+                        const n = points[(i + j) % points.length];
+                        // Simple distance check to avoid cross-sphere lines
+                        const dx = p.sx - n.sx;
+                        const dy = p.sy - n.sy;
+                        if (dx * dx + dy * dy < 2500 * p.scale) {
+                            ctx.beginPath();
+                            ctx.moveTo(p.sx, p.sy);
+                            ctx.lineTo(n.sx, n.sy);
+                            ctx.stroke();
+                        }
+                    }
                 }
             });
 
@@ -937,7 +945,7 @@
             coreGlow.addColorStop(0, 'rgba(0, 255, 255, 0.4)');
             coreGlow.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = coreGlow;
-            ctx.fillRect(0,0,w,h);
+            ctx.fillRect(0, 0, w, h);
 
             // History Graph Overlay
             drawHistory();
@@ -980,12 +988,29 @@
             document.getElementById('space-score').innerText = STATE.space.score.toFixed(0);
             document.getElementById('space-score').style.color = getScoreColor(STATE.space.score);
 
+            // Detailed description (Restored)
             let desc = '';
-            if (STATE.space.kp > 5) desc = `⚠️ МАГНІТНА БУРЯ (Kp=${STATE.space.kp}). `;
-            else desc = `Нормальний геомагнітний фон (Kp=${STATE.space.kp}). `;
-            
-            if (STATE.space.sw_speed > 600) desc += `Високий сонячний вітер (${STATE.space.sw_speed.toFixed(0)}km/s).`;
-            
+            if (STATE.space.kp > 6) {
+                desc = `🔴 ГЕОМАГНІТНИЙ ШТОРМ G${Math.floor(STATE.space.kp - 4)}: Сильне збурення магнітосфери Землі. КРИТИЧНІ РИЗИКИ: порушення GPS-навігації (відхилення до 50м), збої в радіозв'язку на високих широтах, можливі перебої в електромережах, підвищена радіація для авіарейсів на полярних маршрутах. Рекомендується відкласти критичні супутникові операції.`;
+            } else if (STATE.space.kp > 4) {
+                desc = `🟡 АКТИВНА ФАЗА: Підвищена геомагнітна активність (Kp=${STATE.space.kp.toFixed(1)}). ОЧІКУЄТЬСЯ: посилення полярних сяйв до широти 50-55°, мінорні збої в супутниковій навігації (точність ±10-20м), можливі флуктуації в роботі HF-радіозв'язку. Космічна погода нестабільна.`;
+            } else if (STATE.space.kp > 2) {
+                desc = `🟢 ПОМІРНА АКТИВНІСТЬ: Нормальні коливання геомагнітного поля (Kp=${STATE.space.kp.toFixed(1)}). Космічна погода в межах норми. Полярні сяйва можливі на широтах >60°. Всі системи працюють штатно.`;
+            } else {
+                desc = `⚪ СПОКІЙ: Мінімальна геомагнітна активність (Kp=${STATE.space.kp.toFixed(1)}). Ідеальні умови для космічних операцій, супутникового зв'язку та навігації. Магнітосфера стабільна.`;
+            }
+
+            if (STATE.space.sw_speed > 700) {
+                desc += ` ⚠️ ЕКСТРЕМАЛЬНИЙ СОНЯЧНИЙ ВІТЕР: ${STATE.space.sw_speed.toFixed(0)} км/с (норма 300-400). Високоенергетичний потік плазми стискає магнітосферу. Очікується посилення геомагнітної активності протягом 6-12 годин.`;
+            } else if (STATE.space.sw_speed > 550) {
+                desc += ` Швидкість сонячного вітру ${STATE.space.sw_speed.toFixed(0)} км/с - підвищений потік. Можливе посилення магнітосферних збурень.`;
+            }
+
+            if (Math.abs(STATE.space.bz) > 10) {
+                const direction = STATE.space.bz < 0 ? 'південна (НЕБЕЗПЕЧНА)' : 'північна (стабілізуюча)';
+                desc += ` Bz компонента IMF: ${STATE.space.bz.toFixed(1)} nT (${direction}). ${STATE.space.bz < 0 ? 'Південна орієнтація сприяє магнітним бурям!' : ''}`;
+            }
+
             document.getElementById('space-desc').innerText = desc;
         }
 
@@ -1000,10 +1025,30 @@
             document.getElementById('earth-score').style.color = getScoreColor(STATE.earth.score);
 
             // Detailed description based on global averages
-            let desc = `Глобальний моніторинг (4 точки). Середня T=${STATE.earth.temp.toFixed(1)}°C. `;
-            if (Math.abs(STATE.earth.press - 1013) > 10) desc += "Значні баричні аномалії. ";
-            if (STATE.earth.wind > 10) desc += "Підвищена турбулентність атмосфери. ";
-            else desc += "Атмосфера стабільна.";
+            // Detailed description based on global averages (Restored & Adapted)
+            let desc = `🌐 ГЛОБАЛЬНИЙ СТАН: Середня планетна температура ${STATE.earth.temp.toFixed(1)}°C. `;
+
+            // Global Temp Analysis
+            const tempDiff = STATE.earth.temp - 15;
+            if (tempDiff < -5) desc += `(ГЛОБАЛЬНЕ ОХОЛОДЖЕННЯ). Значне відхилення від кліматичної норми. `;
+            else if (tempDiff > 5) desc += `(ГЛОБАЛЬНЕ ПОТЕПЛІННЯ). Температурний режим вище норми. `;
+            else desc += `(в межах кліматичної норми). `;
+
+            // Pressure & Atmosphere
+            if (Math.abs(STATE.earth.press - 1013) > 15) {
+                desc += `⚠️ КРИТИЧНІ БАРИЧНІ АНОМАЛІЇ: ${STATE.earth.press.toFixed(0)} hPa. Глобальна атмосферна нестабільність. Ризик екстремальних погодних явищ у кількох регіонах. `;
+            } else if (Math.abs(STATE.earth.press - 1013) > 8) {
+                desc += `Помітні коливання тиску. Нестабільні атмосферні фронти. `;
+            } else {
+                desc += `Глобальний атмосферний тиск стабільний. `;
+            }
+
+            // Wind/energy
+            if (STATE.earth.wind > 12) {
+                desc += `⚠️ ВИСОКА КІНЕТИЧНА ЕНЕРГІЯ АТМОСФЕРИ (Вітер ${STATE.earth.wind.toFixed(1)} м/с). Циклонічна активність підвищена.`;
+            } else {
+                desc += `Атмосферна циркуляція в нормі.`;
+            }
 
             document.getElementById('earth-desc').innerText = desc;
         }
@@ -1016,11 +1061,29 @@
             document.getElementById('human-score').innerText = STATE.human.score.toFixed(0);
             document.getElementById('human-score').style.color = getScoreColor(STATE.human.score);
 
-            let desc = `Соціальний настрій: ${STATE.human.sentiment}/100. `;
-            if (STATE.human.sentiment < 40) desc += "Домінування негативу. ";
-            if (STATE.human.market > 5) desc += "Ринкова волатильність.";
-            else desc += "Ситуація стабільна.";
-            
+            // Detailed description (Restored Original)
+            let desc = '';
+            if (STATE.human.sentiment < 30) {
+                desc = `🔴 КРИТИЧНИЙ НЕГАТИВ (${STATE.human.sentiment.toFixed(0)}/100): Домінують тривожні новини - війна, смерть, кризи, катастрофи. КОЛЕКТИВНА ПСИХІКА ПІД ТИСКОМ. Інформаційний простір насичений страхом та конфліктами. Рекомендується обмежити споживання новин для ментального здоров'я.`;
+            } else if (STATE.human.sentiment < 45) {
+                desc = `🟡 ПЕСИМІСТИЧНИЙ ФОН (${STATE.human.sentiment.toFixed(0)}/100): Переважають негативні події в світових ЗМІ. Соціальна напруга зростає. Фіксується підвищена тривожність у суспільстві. Потрібна критична оцінка інформації.`;
+            } else if (STATE.human.sentiment < 60) {
+                desc = `🟢 НЕЙТРАЛЬНИЙ БАЛАНС (${STATE.human.sentiment.toFixed(0)}/100): Змішаний інформаційний потік - як позитивні, так і негативні події. Стабільний соціальний стан без критичних відхилень.`;
+            } else {
+                desc = `⚪ ОПТИМІСТИЧНИЙ НАСТРІЙ (${STATE.human.sentiment.toFixed(0)}/100): Позитивні новини переважають - мир, допомога, прогрес, досягнення. Конструктивний соціальний клімат сприяє розвитку.`;
+            }
+
+            // Market analysis
+            if (STATE.human.market > 15) {
+                desc += ` ⚠️ ЕКСТРЕМАЛЬНА РИНКОВА ВОЛАТИЛЬНІСТЬ: ${STATE.human.market.toFixed(1)}% (Bitcoin 24h). Паніка або ейфорія на крипторинках. Високі ризики.`;
+            } else if (STATE.human.market > 10) {
+                desc += ` ВИСОКА волатильність: ${STATE.human.market.toFixed(1)}% (Bitcoin 24h). Нестабільність фінансових ринків.`;
+            } else if (STATE.human.market > 5) {
+                desc += ` Помірна волатильність: ${STATE.human.market.toFixed(1)}% (Bitcoin 24h). Нормальні ринкові коливання.`;
+            } else {
+                desc += ` Низька волатильність: ${STATE.human.market.toFixed(1)}% (Bitcoin 24h). Ринки стабільні.`;
+            }
+
             document.getElementById('human-desc').innerText = desc;
         }
 
@@ -1033,17 +1096,17 @@
             let fullDesc = "";
 
             if (idx < 30) {
-                mood = "CRITICAL";
-                fullDesc = "СИСТЕМНИЙ ДИСБАЛАНС";
+                mood = "КРИТИЧНИЙ СТАН";
+                fullDesc = "Планетарна система під екстремальним тиском. Високий рівень космічної активності, атмосферних аномалій та соціального стресу. Рекомендується підвищена обережність.";
             } else if (idx < 50) {
-                mood = "WARNING";
-                fullDesc = "НАПРУЖЕННЯ СИСТЕМИ";
+                mood = "НАПРУЖЕННЯ";
+                fullDesc = "Виявлено значні відхилення в одному або кількох шарах. Планетарна система в стані дисбалансу. Очікується посилення нестабільності.";
             } else if (idx < 70) {
-                mood = "STABLE";
-                fullDesc = "НОРМАЛЬНИЙ РЕЖИМ";
+                mood = "СТАБІЛЬНІСТЬ";
+                fullDesc = "Планетарні параметри в межах норми. Локальні флуктуації присутні, але загальний стан контрольований. Нормальний режим функціонування.";
             } else {
-                mood = "OPTIMAL";
-                fullDesc = "ГАРМОНІЯ ВЕКТОРІВ";
+                mood = "ГАРМОНІЯ";
+                fullDesc = "Оптимальна синхронізація всіх шарів. Космос, Земля та Соціум в балансі. Сприятливі умови для всіх видів діяльності.";
             }
 
             document.getElementById('main-desc').innerHTML = `<span style="color:#fff; font-weight:bold">${mood}</span> // ${fullDesc}`;
@@ -1099,23 +1162,23 @@
         function checkAlerts() {
             // SPACE
             if (STATE.space.kp > 5) showAlert(`MAGNETIC STORM DETECTED (Kp=${STATE.space.kp})`, 'critical');
-            
+
             // EARTH (Global)
             if (Math.abs(STATE.earth.temp - 15) > 10) showAlert(`GLOBAL TEMP ANOMALY`, 'warning');
-            
+
             // HUMAN
             if (STATE.human.sentiment < 30) showAlert(`SOCIAL SENTIMENT CRITICAL`, 'critical');
             if (STATE.human.market > 8) showAlert(`MARKET VOLATILITY SPIKE`, 'warning');
-            
+
             // SYSTEM
             if (STATE.ibonarium < 35) showAlert(`IBONARIUM INDEX LOW`, 'critical');
         }
 
         // UTILS
         function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-        function tickClock() { 
+        function tickClock() {
             const now = new Date();
-            elClock.innerText = now.toLocaleTimeString('uk-UA', {timeZone: 'UTC'}); // Changed to UTC as requested "Planetary" often implies UTC
+            elClock.innerText = now.toLocaleTimeString('uk-UA', { timeZone: 'UTC' }); // Changed to UTC as requested "Planetary" often implies UTC
         }
         function log(msg) {
             const t = new Date().toLocaleTimeString('uk-UA', { hour12: false });
@@ -1158,4 +1221,5 @@
         init();
     </script>
 </body>
+
 </html>
