@@ -1,4 +1,4 @@
-ʼ<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
 
 <head>
@@ -675,8 +675,10 @@
                     STATE.space.bt = parseFloat(l[6]) || 5;
                 }
 
-                if (kp && kp.length > 1) {
-                    STATE.space.kp = parseFloat(kp[kp.length - 1][1]) || 0;
+                // FIX: NOAA planetary-k-index.json is now an array of objects
+                if (kp && kp.length > 0) {
+                    const latestKp = kp[kp.length - 1];
+                    STATE.space.kp = parseFloat(latestKp.Kp) || 0;
                 }
 
                 // Calculate SPACE score (0-100)
